@@ -4,19 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitácora Emocional | Crecimiento y Reflexión</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1E3A8A">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bitácora Emocional">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E3A8A',
+                        secondary: '#D4AF37',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Script Anti-FOUC (Previene destello blanco en modo oscuro) -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
     <!-- Librería para generar el PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* Paleta original solicitada, adaptada para transmitir calma */
-            --primary-color: #1E3A8A; /* Azul Oscuro */
-            --secondary-color: #D4AF37; /* Dorado/Amarillo */
-            --background-color: #f8fafc; /* Gris/Azul muy claro, más suave */
+            --primary-color: #1E3A8A; 
+            --secondary-color: #D4AF37; 
+            --background-color: #f8fafc; 
             --text-color: #334155;
             --card-bg: #FFFFFF;
+        }
+
+        .dark {
+            --background-color: #0f172a; 
+            --text-color: #e2e8f0;
+            --card-bg: #1e293b;
         }
 
         body {
@@ -24,6 +57,8 @@
             background-color: var(--background-color);
             color: var(--text-color);
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .card {
@@ -33,6 +68,10 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             padding: 1.5rem;
             transition: all 0.3s ease;
+        }
+        
+        .dark .card {
+            border-color: #334155;
         }
 
         .action-btn {
@@ -60,8 +99,18 @@
             cursor: pointer;
         }
 
+        .dark .secondary-btn {
+            background-color: #334155;
+            color: #93c5fd;
+            border-color: #475569;
+        }
+
         .secondary-btn:hover {
             background-color: #e2e8f0;
+        }
+        
+        .dark .secondary-btn:hover {
+            background-color: #475569;
         }
 
         /* Paneles Full-Screen */
@@ -100,7 +149,7 @@
         }
 
         .modal-content {
-            background-color: #FFFFFF;
+            background-color: var(--card-bg);
             border-radius: 1rem;
             padding: 2rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -109,6 +158,11 @@
             transition: all 0.3s ease-out;
             width: 100%;
             max-width: 500px;
+        }
+
+        .dark .modal-content {
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
         .modal-overlay.active {
@@ -121,6 +175,18 @@
         }
 
         /* Inputs y Selectores */
+        input, select, textarea {
+            background-color: #f8fafc;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+        
+        .dark input, .dark select, .dark textarea {
+            background-color: #0f172a;
+            color: #f8fafc;
+            border-color: #475569;
+        }
+
         input:focus, select:focus, textarea:focus {
             border-color: var(--secondary-color) !important;
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
@@ -144,6 +210,12 @@
             margin-bottom: 0.5rem;
             margin-right: 0.5rem;
         }
+        .dark .tag-label {
+            background-color: #334155;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+
         .tag-checkbox:checked + .tag-label {
             background-color: var(--primary-color);
             color: white;
@@ -164,11 +236,22 @@
             text-align: center;
             font-weight: 500;
             color: #475569;
+            background-color: #f8fafc;
         }
+        .dark .radio-visual-label {
+            background-color: #0f172a;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+
         .radio-visual:checked + .radio-visual-label {
             background-color: #eff6ff;
             border-color: var(--primary-color);
             color: var(--primary-color);
+        }
+        .dark .radio-visual:checked + .radio-visual-label {
+            background-color: rgba(30, 58, 138, 0.3);
+            color: #93c5fd;
         }
 
         /* Escala de intensidad */
@@ -183,6 +266,13 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
+            background-color: #f8fafc;
+            color: #475569;
+        }
+        .dark .intensity-label {
+            background-color: #0f172a;
+            border-color: #475569;
+            color: #cbd5e1;
         }
         .radio-visual:checked + .intensity-label {
             background-color: var(--secondary-color);
@@ -216,41 +306,47 @@
 
     <!-- PANTALLA DE LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-[var(--background-color)] z-[200] flex items-center justify-center p-4">
-        <div class="login-card-animation bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 relative overflow-hidden">
+        <div class="login-card-animation bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 dark:border-slate-700 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-[var(--primary-color)]"></div>
             
+            <div class="absolute top-4 right-4">
+                <button onclick="toggleDarkMode()" class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors" id="login-dark-btn">
+                    🌞
+                </button>
+            </div>
+
             <div class="text-center mb-8 mt-4">
-                <div class="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center text-[var(--primary-color)]">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-[var(--primary-color)] dark:text-blue-400">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">Bitácora Emocional</h1>
-                <p class="text-sm text-gray-500 mt-2">Un espacio para el autoconocimiento y la comunicación consciente.</p>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Bitácora Emocional</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Un espacio para el autoconocimiento y la comunicación consciente.</p>
             </div>
 
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-                    <input type="text" id="auth-username" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white transition-colors" required>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuario</label>
+                    <input type="text" id="auth-username" class="w-full p-3 border rounded-lg transition-colors" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                    <input type="password" id="auth-password" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white transition-colors" required>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
+                    <input type="password" id="auth-password" class="w-full p-3 border rounded-lg transition-colors" required>
                 </div>
-                <p id="auth-error" class="text-red-500 text-xs hidden font-medium"></p>
+                <p id="auth-error" class="text-red-500 dark:text-red-400 text-xs hidden font-medium"></p>
                 
                 <button type="submit" id="auth-submit-btn" class="w-full action-btn py-3 mt-4 flex justify-center items-center gap-2">
                     <span>Ingresar</span>
                 </button>
 
-                <div class="mt-4 text-center text-sm text-gray-600">
+                <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
                     <span id="auth-toggle-text">¿No tienes cuenta?</span> 
-                    <button type="button" id="toggle-auth-btn" class="text-[var(--primary-color)] font-bold hover:underline focus:outline-none">Crear cuenta</button>
+                    <button type="button" id="toggle-auth-btn" class="text-[var(--primary-color)] dark:text-blue-400 font-bold hover:underline focus:outline-none">Crear cuenta</button>
                 </div>
             </form>
             
-            <div class="mt-6 text-center text-xs text-gray-400">
+            <div class="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">
                 La información registrada aquí es privada. <br>Solo se compartirá lo que tú decidas explícitamente.
             </div>
         </div>
@@ -259,24 +355,32 @@
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="app-container" class="mx-auto max-w-5xl hidden">
         <!-- HEADER -->
-        <header class="bg-white p-4 shadow-sm rounded-xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border border-gray-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-[var(--primary-color)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+        <header class="bg-white dark:bg-slate-800 p-4 shadow-sm rounded-xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border border-gray-100 dark:border-slate-700">
+            <div class="flex justify-between items-center w-full md:w-auto">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-100 dark:border-slate-600 cursor-pointer hover:border-[var(--primary-color)] transition-all shadow-sm flex-shrink-0" onclick="openProfileModal()" title="Mi Perfil">
+                        <img id="header-avatar" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFFM0E4QSI+PHBhdGggZD0iTTEyIDYuMjUzdjEzbTAtMTNDMTAuODMyIDUuNDc3IDkuMjQ2IDUgNy41IDVTNC4xNjggNS40NzcgMyA2LjI1M3YxM0M0LjE2OCAxOC40NzcgNS43NTQgMTggNy41IDE4czMuMzMyLjQ3NyA0LjUgMS4yNTNtMC0xM0MxMy4xNjggNS40NzcgMTQuNzU0IDUgMTYuNSA1YzEuNzQ3IDAgMy4zMzIuNDc3IDQuNSAxLjI1M3YxM0MxOS44MzIgMTguNDc3IDE4LjI0NyAxOCAxNi41IDE4Yy0xLjc0NiAwLTMuMzMyLjQ3Ny00LjUgMS4yNTMiIC8+PC9zdmc+" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800 dark:text-white leading-tight">Bitácora Emocional</h1>
+                        <p id="user-greeting" class="text-xs text-gray-500 dark:text-gray-400">Hola, Usuario</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-lg font-bold text-gray-800 leading-tight">Bitácora Emocional</h1>
-                    <p id="user-greeting" class="text-xs text-gray-500">Hola, Usuario</p>
-                </div>
+                <!-- Botón Modo Oscuro Móvil -->
+                <button onclick="toggleDarkMode()" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors dark-mode-icon">
+                    🌞
+                </button>
             </div>
 
-            <nav class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
-                <button onclick="navigate('dashboard')" id="nav-dashboard" class="text-sm font-medium px-4 py-2 rounded-lg bg-gray-100 text-[var(--primary-color)] transition-colors whitespace-nowrap">Dashboard</button>
-                <button onclick="navigate('my-logs')" id="nav-my-logs" class="text-sm font-medium px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Mis Registros</button>
-                <button onclick="navigate('shared-logs')" id="nav-shared-logs" class="text-sm font-medium px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Espacio Compartido</button>
-                <button onclick="logout()" class="text-sm font-medium px-4 py-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors whitespace-nowrap border border-transparent hover:border-red-100">Salir</button>
+            <nav class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 items-center">
+                <button onclick="navigate('dashboard')" id="nav-dashboard" class="text-sm font-medium px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-[var(--primary-color)] dark:text-blue-400 transition-colors whitespace-nowrap">Inicio</button>
+                <button onclick="navigate('my-logs')" id="nav-my-logs" class="text-sm font-medium px-4 py-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap">Mis Registros</button>
+                <button onclick="navigate('shared-logs')" id="nav-shared-logs" class="text-sm font-medium px-4 py-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap">Espacio Compartido</button>
+                <button onclick="logout()" class="text-sm font-medium px-4 py-2 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors whitespace-nowrap border border-transparent hover:border-red-100 dark:hover:border-red-900">Salir</button>
+                <!-- Botón Modo Oscuro Desktop -->
+                <button onclick="toggleDarkMode()" class="hidden md:flex w-9 h-9 rounded-full items-center justify-center bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors ml-2 dark-mode-icon">
+                    🌞
+                </button>
             </nav>
         </header>
 
@@ -284,55 +388,79 @@
         <main>
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="space-y-6">
-                <!-- AVISO ANCLAJE PSICOLÓGICO (Movido aquí para que solo se vea en el Dashboard) -->
-                <div class="bg-blue-50 border-l-4 border-[var(--primary-color)] p-4 rounded-r-lg shadow-sm">
-                    <p class="text-sm text-blue-800 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                
+                <!-- GAMIFICACIÓN: TU JARDÍN EMOCIONAL -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 p-6 rounded-xl border border-green-200 dark:border-green-800 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="text-green-800 dark:text-green-300 font-bold text-lg">Tu Jardín Emocional</h3>
+                            <button onclick="openModal('garden-info-modal')" class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 hover:bg-green-300 dark:hover:bg-green-700 bg-green-200/70 dark:bg-green-800/50 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer" title="¿Qué significa esto?">?</button>
+                        </div>
+                        <p class="text-sm text-green-700 dark:text-green-400">Has regulado bien tu emoción en <strong id="gamification-streak" class="text-xl">0</strong> situaciones consecutivas.</p>
+                        <p class="text-xs text-green-600 dark:text-green-300 mt-1 font-bold uppercase tracking-wide bg-white/50 dark:bg-black/20 inline-block px-2 py-1 rounded-md" id="gamification-text">Semilla</p>
+                    </div>
+                    <div class="text-5xl drop-shadow-sm transition-transform hover:scale-110 duration-300 cursor-default" id="gamification-icon">
+                        🌱
+                    </div>
+                </div>
+
+                <!-- AVISO ANCLAJE PSICOLÓGICO -->
+                <div class="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-[var(--primary-color)] p-4 rounded-r-lg shadow-sm">
+                    <p class="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
                         Este espacio es para entender tus patrones emocionales, no para acumular reproches. La honestidad contigo mismo/a es la clave.
                     </p>
                 </div>
 
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800">Tus Patrones de Reflexión</h2>
-                    <button onclick="generateWeeklySummary()" class="secondary-btn px-4 py-2 text-sm flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        Resumen Semanal
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">Tus Patrones de Reflexión</h2>
+                    <button onclick="openReportModal()" class="secondary-btn px-4 py-2 text-sm flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-slate-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--primary-color)] dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                        Generar Análisis
                     </button>
                 </div>
 
                 <!-- Métricas Rápidas -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div class="card p-4 text-center">
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Registros Totales</p>
-                        <p id="stat-total" class="text-3xl font-bold text-[var(--primary-color)]">0</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">Registros Totales</p>
+                        <p id="stat-total" class="text-3xl font-bold text-[var(--primary-color)] dark:text-blue-400">0</p>
                     </div>
                     <div class="card p-4 text-center">
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Intensidad Promedio</p>
-                        <p id="stat-intensity" class="text-3xl font-bold text-[var(--secondary-color)]">0.0<span class="text-sm text-gray-400 font-normal">/5</span></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-1" title="Situaciones marcadas como 'Algo mío para trabajar'">Trabajo Personal</p>
+                        <p id="stat-self-work" class="text-3xl font-bold text-indigo-500 dark:text-indigo-400">0<span class="text-sm text-gray-400 dark:text-gray-500 font-normal ml-1">(0%)</span></p>
                     </div>
                     <div class="card p-4 text-center">
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Regulación Consciente</p>
-                        <p id="stat-regulation" class="text-3xl font-bold text-green-600">0%</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">Solucionados</p>
+                        <p id="stat-resolved" class="text-3xl font-bold text-emerald-500 dark:text-emerald-400">0</p>
                     </div>
                     <div class="card p-4 text-center">
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Alta Intensidad (4-5)</p>
-                        <p id="stat-high-intensity" class="text-3xl font-bold text-orange-500">0%</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">Intensidad Promedio</p>
+                        <p id="stat-intensity" class="text-3xl font-bold text-[var(--secondary-color)]">0.0<span class="text-sm text-gray-400 dark:text-gray-500 font-normal">/5</span></p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">Buena Regulación</p>
+                        <p id="stat-regulation" class="text-3xl font-bold text-green-600 dark:text-green-400">0%</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">Alta Intensidad (4-5)</p>
+                        <p id="stat-high-intensity" class="text-3xl font-bold text-orange-500 dark:text-orange-400">0%</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Frecuencias -->
                     <div class="card p-6">
-                        <h3 class="text-sm font-bold text-gray-700 uppercase mb-4 border-b pb-2">Emociones más frecuentes</h3>
+                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase mb-4 border-b dark:border-slate-700 pb-2">Emociones más frecuentes</h3>
                         <div id="chart-emotions" class="space-y-3">
-                            <p class="text-sm text-gray-400 italic">No hay datos suficientes.</p>
+                            <p class="text-sm text-gray-400 dark:text-gray-500 italic">No hay datos suficientes.</p>
                         </div>
                     </div>
                     
                     <div class="card p-6">
-                        <h3 class="text-sm font-bold text-gray-700 uppercase mb-4 border-b pb-2">Necesidades subyacentes</h3>
+                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase mb-4 border-b dark:border-slate-700 pb-2">Necesidades subyacentes</h3>
                         <div id="chart-needs" class="space-y-3">
-                            <p class="text-sm text-gray-400 italic">No hay datos suficientes.</p>
+                            <p class="text-sm text-gray-400 dark:text-gray-500 italic">No hay datos suficientes.</p>
                         </div>
                     </div>
                 </div>
@@ -341,12 +469,33 @@
             <!-- MIS REGISTROS -->
             <div id="view-my-logs" class="hidden space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-2">
-                    <h2 class="text-xl font-bold text-gray-800">Mi Historial Personal</h2>
-                    <button onclick="openLogForm()" class="action-btn px-5 py-2 flex items-center gap-2">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">Mi Historial Personal</h2>
+                    <button onclick="openLogForm()" class="action-btn px-5 py-2 flex items-center gap-2 w-full sm:w-auto justify-center">
                         <span>+ Nuevo Registro</span>
                     </button>
                 </div>
                 
+                <!-- BARRA DE FILTROS -->
+                <div class="bg-white dark:bg-slate-800 p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col md:flex-row gap-3 items-center justify-between">
+                    <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                        <span class="text-sm text-gray-500 dark:text-gray-400 font-medium hidden md:block mt-2">Filtrar por:</span>
+                        <input type="date" id="filter-date" class="p-2 border rounded-lg text-sm flex-1 md:flex-none" title="Buscar por fecha específica">
+                        <select id="filter-emotion" class="p-2 border rounded-lg text-sm flex-1 md:flex-none max-w-[200px]">
+                            <option value="">Todas las Emociones</option>
+                            <!-- Llenado por JS -->
+                        </select>
+                        <select id="filter-intensity" class="p-2 border rounded-lg text-sm flex-1 md:flex-none">
+                            <option value="">Cualquier Intensidad</option>
+                            <option value="1">Intensidad 1</option>
+                            <option value="2">Intensidad 2</option>
+                            <option value="3">Intensidad 3</option>
+                            <option value="4">Intensidad 4</option>
+                            <option value="5">Intensidad 5</option>
+                        </select>
+                    </div>
+                    <button onclick="applyFilters()" class="secondary-btn px-4 py-2 text-sm w-full md:w-auto">Aplicar Filtros</button>
+                </div>
+
                 <div id="my-logs-container" class="space-y-4">
                     <!-- Renderizado de logs privados -->
                 </div>
@@ -354,9 +503,14 @@
 
             <!-- ESPACIO COMPARTIDO -->
             <div id="view-shared-logs" class="hidden space-y-4">
-                <div class="mb-2">
-                    <h2 class="text-xl font-bold text-gray-800">Espacio de Pareja</h2>
-                    <p class="text-sm text-gray-500">Registros que ambos han decidido compartir para abrir el diálogo.</p>
+                <div class="mb-6 text-center">
+                    <div class="flex items-center justify-center gap-4 mb-4" id="shared-header-avatars">
+                        <img id="shared-avatar-me" src="" class="w-16 h-16 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-md bg-gray-100 dark:bg-slate-700">
+                        <span class="text-3xl animate-pulse">❤️</span>
+                        <img id="shared-avatar-partner" src="" class="w-16 h-16 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-md bg-gray-100 dark:bg-slate-700">
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">Espacio de Pareja</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Registros que ambos han decidido compartir para abrir el diálogo.</p>
                 </div>
                 
                 <div id="shared-logs-container" class="space-y-4">
@@ -370,10 +524,10 @@
     <!-- FORMULARIO DE REGISTRO (FULL PANEL)        -->
     <!-- ========================================== -->
     <div id="log-form-panel" class="full-panel">
-        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-10">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-2xl font-bold text-[var(--primary-color)]">Reflexión sobre una situación</h2>
-                <button onclick="closeFullPanel('log-form-panel')" class="text-gray-400 hover:text-gray-600 p-2">
+        <div class="max-w-3xl mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 p-6 mb-10 mt-4 relative">
+            <div class="flex justify-between items-center mb-6 border-b dark:border-slate-700 pb-4">
+                <h2 class="text-2xl font-bold text-[var(--primary-color)] dark:text-blue-400">Reflexión sobre una situación</h2>
+                <button type="button" onclick="confirmCloseForm()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
@@ -383,70 +537,76 @@
                 
                 <!-- 1. Contexto y Hechos -->
                 <section class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <span class="bg-blue-100 text-blue-800 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">1</span> 
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                        <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">1</span> 
                         La Situación
                     </h3>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Contexto breve</label>
-                        <input type="text" id="log-context" placeholder="Ej: Cena del viernes, Organizando la semana..." class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contexto breve</label>
+                            <input type="text" id="log-context" placeholder="Ej: Cena del viernes, Organizando la semana..." class="w-full p-3 border rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha del suceso</label>
+                            <input type="date" id="log-event-date" class="w-full p-3 border rounded-lg" required>
+                        </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Hechos objetivos</label>
-                        <p class="text-xs text-gray-500 mb-2">Describe solo lo que grabaría una cámara, sin adjetivos ni juicios.</p>
-                        <textarea id="log-facts" rows="2" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Ej: Me dijo que llegaría a las 20h y llegó a las 21h sin avisar." required></textarea>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hechos objetivos</label>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Describe solo lo que grabaría una cámara, sin adjetivos ni juicios.</p>
+                        <textarea id="log-facts" rows="2" class="w-full p-3 border rounded-lg" placeholder="Ej: Me dijo que llegaría a las 20h y llegó a las 21h sin avisar." required></textarea>
                     </div>
                 </section>
 
                 <!-- 2. Mundo Interno -->
                 <section class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <span class="bg-blue-100 text-blue-800 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">2</span> 
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                        <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">2</span> 
                         Tu Mundo Interno
                     </h3>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Interpretación personal</label>
-                        <p class="text-xs text-gray-500 mb-2">¿Qué significado le diste en tu mente a lo que ocurrió?</p>
-                        <textarea id="log-interpretation" rows="2" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Ej: Pensé que mi tiempo no le importa y que no respeta nuestros acuerdos." required></textarea>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interpretación personal</label>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">¿Qué significado le diste en tu mente a lo que ocurrió?</p>
+                        <textarea id="log-interpretation" rows="2" class="w-full p-3 border rounded-lg" placeholder="Ej: Pensé que mi tiempo no le importa y que no respeta nuestros acuerdos." required></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Emociones sentidas (puedes elegir varias)</label>
-                        <div class="flex flex-wrap" id="emotions-container">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Emociones sentidas (puedes elegir varias)</label>
+                        <div class="flex flex-wrap gap-y-2" id="emotions-container">
                             <!-- JS genera checkboxes -->
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Intensidad emocional</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Intensidad emocional</label>
                         <div class="flex gap-4 items-center">
-                            <span class="text-xs text-gray-500">Leve</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Leve</span>
                             <div class="flex gap-2">
                                 <input type="radio" name="intensity" id="int-1" value="1" class="radio-visual" required>
-                                <label for="int-1" class="intensity-label bg-gray-50">1</label>
+                                <label for="int-1" class="intensity-label">1</label>
                                 
                                 <input type="radio" name="intensity" id="int-2" value="2" class="radio-visual">
-                                <label for="int-2" class="intensity-label bg-gray-50">2</label>
+                                <label for="int-2" class="intensity-label">2</label>
                                 
                                 <input type="radio" name="intensity" id="int-3" value="3" class="radio-visual">
-                                <label for="int-3" class="intensity-label bg-gray-50">3</label>
+                                <label for="int-3" class="intensity-label">3</label>
                                 
                                 <input type="radio" name="intensity" id="int-4" value="4" class="radio-visual">
-                                <label for="int-4" class="intensity-label bg-gray-50">4</label>
+                                <label for="int-4" class="intensity-label">4</label>
                                 
                                 <input type="radio" name="intensity" id="int-5" value="5" class="radio-visual">
-                                <label for="int-5" class="intensity-label bg-gray-50">5</label>
+                                <label for="int-5" class="intensity-label">5</label>
                             </div>
-                            <span class="text-xs text-gray-500">Intensa</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Intensa</span>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Necesidades que sentiste vulneradas o activadas</label>
-                        <div class="flex flex-wrap" id="needs-container">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Necesidades que sentiste vulneradas o activadas</label>
+                        <div class="flex flex-wrap gap-y-2" id="needs-container">
                             <!-- JS genera checkboxes -->
                         </div>
                     </div>
@@ -454,13 +614,13 @@
 
                 <!-- 3. Evaluación y Reacción -->
                 <section class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <span class="bg-blue-100 text-blue-800 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">3</span> 
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                        <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">3</span> 
                         Respuesta y Reflexión
                     </h3>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">¿Cómo manejaste tu reacción?</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Cómo manejaste tu reacción?</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <input type="radio" name="regulation" id="reg-bien" value="Regulé bien mi emoción" class="radio-visual" required>
                             <label for="reg-bien" class="radio-visual-label text-sm">Regulé bien mi emoción</label>
@@ -474,7 +634,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">¿Lo comunicaste en el momento o después?</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">¿Lo comunicaste en el momento o después?</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <input type="radio" name="communication" id="com-tran" value="Sí, de forma tranquila" class="radio-visual" required>
                             <label for="com-tran" class="radio-visual-label text-sm">Sí, de forma tranquila</label>
@@ -488,7 +648,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Autoevaluación del origen</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Autoevaluación del origen</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <input type="radio" name="origin" id="ori-mio" value="Creo que es algo mío para trabajar" class="radio-visual" required>
                             <label for="ori-mio" class="radio-visual-label text-sm">Algo mío para trabajar</label>
@@ -502,23 +662,35 @@
                     </div>
                 </section>
 
-                <!-- 4. Visibilidad -->
-                <section class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <h3 class="text-sm font-bold text-gray-800 mb-3">Visibilidad del Registro</h3>
+                <!-- 4. Reencuadre y Cierre -->
+                <section class="space-y-4">
+                    <h3 class="text-lg font-semibold text-[var(--secondary-color)] flex items-center gap-2">
+                        <span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">4</span> 
+                        Reencuadre Posterior (Opcional)
+                    </h3>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Si volviste a este registro después de procesarlo o hablarlo, anota aquí tu conclusión. Las emociones cambian al conversar.</p>
+                        <textarea id="log-closing-note" rows="2" class="w-full p-3 border border-yellow-300 dark:border-yellow-700 rounded-lg bg-yellow-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900" placeholder="Ej: Lo hablamos a la noche. Me di cuenta que fue un malentendido y nos pedimos disculpas..."></textarea>
+                    </div>
+                </section>
+
+                <!-- 5. Visibilidad -->
+                <section class="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-xl border border-gray-200 dark:border-slate-600">
+                    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-3">Visibilidad del Registro</h3>
                     <div class="flex gap-4">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="visibility" value="Privado" class="w-4 h-4 text-[var(--primary-color)]" checked>
-                            <span class="text-sm text-gray-700">Mantener en privado (Solo para mí)</span>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Mantener en privado (Solo para mí)</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="visibility" value="Compartido" class="w-4 h-4 text-[var(--primary-color)]">
-                            <span class="text-sm text-gray-700">Compartir en el espacio común</span>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Compartir en el espacio común</span>
                         </label>
                     </div>
                 </section>
 
-                <div class="pt-4 flex justify-end gap-3 border-t">
-                    <button type="button" onclick="closeFullPanel('log-form-panel')" class="secondary-btn px-6 py-3">Cancelar</button>
+                <div class="pt-4 flex justify-end gap-3 border-t dark:border-slate-700">
+                    <button type="button" onclick="confirmCloseForm()" class="secondary-btn px-6 py-3">Cancelar</button>
                     <button type="submit" class="action-btn px-8 py-3">Guardar Reflexión</button>
                 </div>
             </form>
@@ -527,93 +699,249 @@
 
     <!-- MODAL DE LECTURA DE REGISTRO -->
     <div id="log-detail-modal" class="modal-overlay">
-        <div class="modal-content max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="modal-content max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <h3 id="detail-context" class="text-2xl font-bold text-gray-800">Contexto</h3>
-                    <p id="detail-date" class="text-sm text-gray-500">Fecha</p>
+                    <div class="flex items-center gap-2">
+                        <h3 id="detail-context" class="text-2xl font-bold text-gray-800 dark:text-white">Contexto</h3>
+                        <span id="detail-resolved-badge" class="hidden bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide border border-emerald-200 dark:border-emerald-700">✅ Resuelto</span>
+                    </div>
+                    <p id="detail-date" class="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">Fecha Suceso</p>
+                    <p id="detail-created" class="text-xs text-gray-400 dark:text-gray-500">Registrado el: --</p>
                 </div>
-                <button onclick="closeModal('log-detail-modal')" class="text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2">✕</button>
+                <button onclick="closeModal('log-detail-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 bg-gray-100 dark:bg-slate-700 rounded-full p-2">✕</button>
             </div>
             
             <div id="detail-author-badge" class="hidden mb-4">
-                <span class="inline-flex items-center gap-1 bg-blue-50 text-[var(--primary-color)] px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
+                <span class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-[var(--primary-color)] dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium border border-blue-100 dark:border-blue-800">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
                     <span id="detail-author-name">Nombre</span>
                 </span>
             </div>
 
-            <div class="space-y-5">
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Hechos Objetivos</h4>
-                    <p id="detail-facts" class="text-gray-700"></p>
+            <div class="space-y-4">
+                <div class="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg border border-gray-100 dark:border-slate-600">
+                    <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Hechos Objetivos</h4>
+                    <p id="detail-facts" class="text-gray-700 dark:text-gray-200 text-sm"></p>
                 </div>
                 
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Interpretación</h4>
-                    <p id="detail-interpretation" class="text-gray-700"></p>
+                <div class="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg border border-gray-100 dark:border-slate-600">
+                    <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Interpretación</h4>
+                    <p id="detail-interpretation" class="text-gray-700 dark:text-gray-200 text-sm"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Emociones</h4>
+                        <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Emociones</h4>
                         <div id="detail-emotions" class="flex flex-wrap gap-1"></div>
                     </div>
                     <div>
-                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Necesidades</h4>
+                        <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Necesidades</h4>
                         <div id="detail-needs" class="flex flex-wrap gap-1"></div>
                     </div>
                 </div>
 
-                <div class="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="border-t dark:border-slate-700 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
-                        <p class="text-xs text-gray-500 mb-1">Intensidad</p>
-                        <p id="detail-intensity" class="font-bold text-gray-800"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Intensidad</p>
+                        <p id="detail-intensity" class="font-bold text-gray-800 dark:text-white"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 mb-1">Regulación</p>
-                        <p id="detail-regulation" class="font-bold text-gray-800"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Regulación</p>
+                        <p id="detail-regulation" class="font-bold text-gray-800 dark:text-white"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 mb-1">Comunicación</p>
-                        <p id="detail-communication" class="font-bold text-gray-800"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Comunicación</p>
+                        <p id="detail-communication" class="font-bold text-gray-800 dark:text-white"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 mb-1">Evaluación de Origen</p>
-                        <p id="detail-origin" class="font-bold text-gray-800"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Evaluación de Origen</p>
+                        <p id="detail-origin" class="font-bold text-gray-800 dark:text-white"></p>
                     </div>
                 </div>
+
+                <!-- Contenedor Reencuadre -->
+                <div id="detail-closing-container" class="hidden bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800 mt-2">
+                    <h4 class="text-xs font-bold text-yellow-800 dark:text-yellow-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Reencuadre / Cierre
+                    </h4>
+                    <p id="detail-closing-note" class="text-yellow-900 dark:text-yellow-200 text-sm italic"></p>
+                </div>
                 
-                <div id="detail-actions" class="pt-4 flex justify-end gap-2 border-t mt-4 hidden">
-                    <button onclick="editCurrentLog()" class="secondary-btn px-4 py-2 text-sm">Editar</button>
-                    <button onclick="deleteCurrentLog()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100">Eliminar</button>
+                <div id="detail-actions" class="pt-4 flex justify-between gap-2 border-t dark:border-slate-700 mt-4 hidden">
+                    <button onclick="toggleResolvedStatus()" id="btn-toggle-resolve" class="flex-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-800/50 transition-colors">
+                        Marcar como Solucionado
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="editCurrentLog()" class="secondary-btn px-4 py-2 text-sm flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            Editar
+                        </button>
+                        <button onclick="deleteCurrentLog()" class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-800/50" title="Eliminar registro">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE RESUMEN SEMANAL -->
-    <div id="summary-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold text-[var(--primary-color)] mb-4">Resumen de los últimos 7 días</h3>
-            <!-- El id="summary-content" ahora tendrá formato HTML y fondo blanco para una impresión limpia en PDF -->
-            <div id="summary-content" class="space-y-4 text-gray-700 bg-white p-6 rounded-lg border border-gray-200 text-sm leading-relaxed">
-                Generando resumen...
-            </div>
-            <div class="mt-6 flex justify-end gap-3">
-                <button onclick="downloadPDF()" class="secondary-btn px-4 py-2 text-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Descargar PDF
+    <!-- MODAL DE GENERADOR DE REPORTE -->
+    <div id="report-modal" class="modal-overlay">
+        <div class="modal-content max-w-lg w-full">
+            <h3 class="text-xl font-bold text-[var(--primary-color)] dark:text-blue-400 mb-2">Análisis Profundo</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Exporta tus registros estructurados para analizarlos en herramientas como ChatGPT/Claude o para entregárselos impresos a tu terapeuta.</p>
+            
+            <!-- Paso 1: Configuración -->
+            <div id="report-config-area" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Periodo a analizar</label>
+                    <select id="report-period" class="w-full p-3 border rounded-lg text-sm transition-colors">
+                        <option value="week">Últimos 7 días</option>
+                        <option value="month">Último mes (30 días)</option>
+                        <option value="all">Historial completo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">¿Qué datos incluir?</label>
+                    <select id="report-scope" class="w-full p-3 border rounded-lg text-sm transition-colors">
+                        <option value="private">Mi historial (Privados + Compartidos)</option>
+                        <option value="shared">Espacio de Pareja (Solo lo que ambos compartimos)</option>
+                    </select>
+                </div>
+                <button onclick="prepareReport()" class="w-full action-btn py-3 mt-4 flex justify-center items-center gap-2">
+                    Preparar Datos
                 </button>
-                <button onclick="closeModal('summary-modal')" class="action-btn px-4 py-2 text-sm">Cerrar</button>
+            </div>
+
+            <!-- Paso 2: Resultado -->
+            <div id="report-result-area" class="hidden space-y-4 mt-2">
+                <div class="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800 text-center mb-4">
+                    <span class="text-3xl block mb-2">✅</span>
+                    <p class="text-sm font-bold text-emerald-800 dark:text-emerald-300" id="report-success-msg">¡Datos empaquetados!</p>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <button onclick="copyReportText()" class="w-full bg-[#10a37f] hover:bg-[#0d8a6b] text-white py-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 transition-colors shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        Copiar Prompt para IA
+                    </button>
+                    
+                    <button onclick="downloadReportPDF()" class="w-full bg-white dark:bg-slate-700 border-2 border-gray-200 dark:border-slate-600 hover:border-[var(--primary-color)] dark:hover:border-blue-400 text-gray-700 dark:text-white py-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 transition-all shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                        Descargar PDF para Imprimir
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeModal('report-modal')" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 px-5 py-2 rounded-lg transition-colors">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="hidden-pdf-container" style="display:none; padding: 20px; background: white;"></div>
+
+    <!-- MODAL INFO JARDÍN -->
+    <div id="garden-info-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-green-800 dark:text-green-400 mb-4 flex items-center gap-2">
+                <span>🌱</span> Tu Jardín Emocional
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Este jardín representa tu <strong>racha actual de autorregulación</strong>. Cada vez que registras una situación y logras manejar tu reacción de forma consciente (marcando "Regulé bien mi emoción"), tu jardín crece. Si reaccionas impulsivamente, vuelves a plantar una semilla para intentarlo de nuevo, sin juicios.
+            </p>
+            <ul class="space-y-3 text-sm text-gray-700 dark:text-gray-200 bg-green-50/50 dark:bg-green-900/20 p-4 rounded-lg border border-green-100 dark:border-green-800">
+                <li class="flex items-center gap-4">
+                    <span class="text-3xl">🌱</span> 
+                    <div><strong>Semilla</strong><br><span class="text-xs text-gray-500 dark:text-gray-400">Inicio de tu proceso (0 a 1 reflexiones seguidas)</span></div>
+                </li>
+                <li class="flex items-center gap-4">
+                    <span class="text-3xl">🌿</span> 
+                    <div><strong>Brote de Consciencia</strong><br><span class="text-xs text-gray-500 dark:text-gray-400">Estás prestando atención (2 a 4 reflexiones seguidas)</span></div>
+                </li>
+                <li class="flex items-center gap-4">
+                    <span class="text-3xl">🌳</span> 
+                    <div><strong>Árbol Fuerte</strong><br><span class="text-xs text-gray-500 dark:text-gray-400">Hábito consolidado (5 a 9 reflexiones seguidas)</span></div>
+                </li>
+                <li class="flex items-center gap-4">
+                    <span class="text-3xl">✨🌳✨</span> 
+                    <div><strong>Bosque de Serenidad</strong><br><span class="text-xs text-gray-500 dark:text-gray-400">Maestría emocional (10+ reflexiones seguidas)</span></div>
+                </li>
+            </ul>
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeModal('garden-info-modal')" class="action-btn px-4 py-2 text-sm bg-green-700 hover:bg-green-800">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PERFIL -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content text-center">
+            <h3 class="text-xl font-bold text-[var(--primary-color)] dark:text-blue-400 mb-4">Mi Perfil</h3>
+            <div class="mb-4">
+                <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-gray-100 dark:border-slate-600 mb-4 shadow-sm relative group">
+                    <img id="profile-modal-img" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFFM0E4QSI+PHBhdGggZD0iTTEyIDYuMjUzdjEzbTAtMTNDMTAuODMyIDUuNDc3IDkuMjQ2IDUgNy41IDVTNC4xNjggNS40NzcgMyA2LjI1M3YxM0M0LjE2OCAxOC40NzcgNS43NTQgMTggNy41IDE4czMuMzMyLjQ3NyA0LjUgMS4yNTNtMC0xM0MxMy4xNjggNS40NzcgMTQuNzU0IDUgMTYuNSA1YzEuNzQ3IDAgMy4zMzIuNDc3IDQuNSAxLjI1M3YxM0MxOS44MzIgMTguNDc3IDE4LjI0NyAxOCAxNi41IDE4Yy0xLjc0NiAwLTMuMzMyLjQ3Ny00LjUgMS4yNTMiIC8+PC9zdmc+" class="w-full h-full object-cover bg-gray-50 dark:bg-slate-700">
+                    <label class="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                        <span class="text-sm font-bold">Cambiar Foto</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="handleProfilePicUpload(event)">
+                    </label>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Toca la imagen para subir una foto de perfil.<br>Solo tú y tu pareja la verán.</p>
+            </div>
+            
+            <div class="text-left space-y-3 mt-4 border-t dark:border-slate-700 pt-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre de Usuario (Cómo te ven)</label>
+                    <input type="text" id="edit-profile-username" class="w-full p-2 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nueva Contraseña</label>
+                    <input type="password" id="edit-profile-password" class="w-full p-2 border rounded-lg text-sm" placeholder="Escribe aquí solo si deseas cambiarla">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 border-t dark:border-slate-700 pt-4">
+                <button onclick="closeModal('profile-modal')" class="secondary-btn px-4 py-2 text-sm">Cancelar</button>
+                <button onclick="saveProfileChanges()" class="action-btn px-4 py-2 text-sm">Guardar Cambios</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // GENERACIÓN PWA (MANIFIESTO Y SERVICE WORKER)
+        // ==========================================
+        const setupPWA = () => {
+            const manifestData = {
+                "name": "Bitácora Emocional",
+                "short_name": "Bitácora",
+                "description": "Herramienta de autoconocimiento y regulación emocional",
+                "start_url": "./index.html",
+                "display": "standalone",
+                "background_color": "#f8fafc",
+                "theme_color": "#1E3A8A",
+                "icons": [{
+                    "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFFM0E4QSI+PHBhdGggZD0iTTEyIDYuMjUzdjEzbTAtMTNDMTAuODMyIDUuNDc3IDkuMjQ2IDUgNy41IDVTNC4xNjggNS40NzcgMyA2LjI1M3YxM0M0LjE2OCAxOC40NzcgNS43NTQgMTggNy41IDE4czMuMzMyLjQ3NyA0LjUgMS4yNTNtMC0xM0MxMy4xNjggNS40NzcgMTQuNzU0IDUgMTYuNSA1YzEuNzQ3IDAgMy4zMzIuNDc3IDQuNSAxLjI1M3YxM0MxOS44MzIgMTguNDc3IDE4LjI0NyAxOCAxNi41IDE4Yy0xLjc0NiAwLTMuMzMyLjQ3Ny00LjUgMS4yNTMiIC8+PC9zdmc+",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/manifest+json'});
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestURL}">`);
+
+            if ('serviceWorker' in navigator) {
+                const swCode = `self.addEventListener('fetch', function(e) {});`;
+                const swBlob = new Blob([swCode], {type: 'application/javascript'});
+                navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(err => console.log('SW setup error', err));
+            }
+        };
 
         // ==========================================
         // CONFIGURACIÓN E INICIALIZACIÓN
@@ -631,10 +959,8 @@
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
         // ESTADO GLOBAL
-        let currentUser = null;
         let activeUserId = sessionStorage.getItem('be_userid') || null;
         let activeUserName = sessionStorage.getItem('be_username') || null;
         let privateLogs = [];
@@ -642,12 +968,30 @@
         let appUsers = [];
         let selectedLogIdForDetail = null;
         let isLoginMode = true;
+        let currentFilters = { emotion: '', intensity: '', date: '' };
+        let currentUserProfilePic = '';
+        let partnerProfilePic = '';
+        let isInitialSharedLoad = true;
 
-        const EMOTIONS_LIST = ['Frustración', 'Enojo', 'Ansiedad', 'Desilusión', 'Vergüenza', 'Tristeza', 'Desvalorización', 'Miedo', 'Inseguridad', 'Agotamiento'];
-        const NEEDS_LIST = ['Orden', 'Anticipación', 'Eficiencia', 'Respeto', 'Validación', 'Autonomía', 'Seguridad', 'Organización', 'Comprensión', 'Apoyo'];
+        const DEFAULT_EMOTIONS = ['Frustración', 'Enojo', 'Ansiedad', 'Desilusión', 'Vergüenza', 'Tristeza', 'Desvalorización', 'Miedo', 'Inseguridad', 'Agotamiento', 'Agobio', 'Culpa', 'Celos', 'Injusticia', 'Confusión', 'Resentimiento', 'Soledad', 'Desconexión'];
+        const DEFAULT_NEEDS = ['Orden', 'Anticipación', 'Eficiencia', 'Respeto', 'Validación', 'Autonomía', 'Seguridad', 'Organización', 'Comprensión', 'Apoyo', 'Colaboración', 'Claridad', 'Espacio personal', 'Empatía', 'Reconocimiento'];
+        
+        let customEmotions = [];
+        let customNeeds = [];
 
         // ==========================================
-        // UTILIDADES Y UI
+        // MODO OSCURO (DARK MODE)
+        // ==========================================
+        window.toggleDarkMode = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.querySelectorAll('.dark-mode-icon').forEach(el => el.textContent = isDark ? '🌙' : '🌞');
+            const loginBtn = document.getElementById('login-dark-btn');
+            if (loginBtn) loginBtn.textContent = isDark ? '🌙' : '🌞';
+        };
+
+        // ==========================================
+        // UTILIDADES, UI Y NOTIFICACIONES
         // ==========================================
         const showToast = (message, type = 'info') => {
             const container = document.getElementById('toast-container');
@@ -661,20 +1005,37 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         };
 
+        const requestNotificationPermission = async () => {
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    await Notification.requestPermission();
+                }
+            }
+        };
+
+        const showBrowserNotification = (title, body) => {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFFM0E4QSI+PHBhdGggZD0iTTEyIDYuMjUzdjEzbTAtMTNDMTAuODMyIDUuNDc3IDkuMjQ2IDUgNy41IDVTNC4xNjggNS40NzcgMyA2LjI1M3YxM0M0LjE2OCAxOC40NzcgNS43NTQgMTggNy41IDE4czMuMzMyLjQ3NyA0LjUgMS4yNTNtMC0xM0MxMy4xNjggNS40NzcgMTQuNzU0IDUgMTYuNSA1YzEuNzQ3IDAgMy4zMzIuNDc3IDQuNSAxLjI1M3YxM0MxOS44MzIgMTguNDc3IDE4LjI0NyAxOCAxNi41IDE4Yy0xLjc0NiAwLTMuMzMyLjQ3Ny00LjUgMS4yNTMiIC8+PC9zdmc+"
+                });
+            }
+        };
+
         window.navigate = (viewId) => {
             document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             
             document.querySelectorAll('nav button').forEach(btn => {
-                if(btn.id !== 'nav-logout') {
-                    btn.classList.remove('bg-gray-100', 'text-[var(--primary-color)]');
-                    btn.classList.add('text-gray-500');
+                if(btn.id !== 'nav-logout' && btn.id !== 'login-dark-btn' && !btn.classList.contains('dark-mode-icon')) {
+                    btn.classList.remove('bg-gray-100', 'dark:bg-slate-700', 'text-[var(--primary-color)]', 'dark:text-blue-400');
+                    btn.classList.add('text-gray-500', 'dark:text-gray-400');
                 }
             });
             const activeBtn = document.getElementById(`nav-${viewId}`);
             if(activeBtn) {
-                activeBtn.classList.remove('text-gray-500');
-                activeBtn.classList.add('bg-gray-100', 'text-[var(--primary-color)]');
+                activeBtn.classList.remove('text-gray-500', 'dark:text-gray-400');
+                activeBtn.classList.add('bg-gray-100', 'dark:bg-slate-700', 'text-[var(--primary-color)]', 'dark:text-blue-400');
             }
         };
 
@@ -683,15 +1044,118 @@
         window.openModal = (id) => document.getElementById(id).classList.add('active');
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
 
+        window.confirmCloseForm = () => {
+            const context = document.getElementById('log-context').value;
+            if (context.length > 0) {
+                if (confirm("¿Estás seguro que deseas salir? Tienes cambios sin guardar.")) {
+                    closeFullPanel('log-form-panel');
+                }
+            } else {
+                closeFullPanel('log-form-panel');
+            }
+        };
+
+        const capitalizeFirstLetter = (string) => {
+            if (!string) return '';
+            string = string.trim();
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        };
+
         // Renderizar opciones múltiples
-        const renderCheckboxes = (containerId, items, name) => {
+        const renderCheckboxes = (containerId, defaultItems, customItems, name) => {
             const container = document.getElementById(containerId);
-            container.innerHTML = items.map(item => `
-                <div>
+            
+            let html = defaultItems.map(item => `
+                <div class="inline-block">
                     <input type="checkbox" id="${name}-${item}" value="${item}" name="${name}" class="tag-checkbox">
                     <label for="${name}-${item}" class="tag-label">${item}</label>
                 </div>
             `).join('');
+
+            // Renderizar personalizados con botón de borrar
+            if (customItems && customItems.length > 0) {
+                html += customItems.map(item => `
+                    <div class="inline-block relative group">
+                        <input type="checkbox" id="${name}-${item}" value="${item}" name="${name}" class="tag-checkbox">
+                        <label for="${name}-${item}" class="tag-label border-dashed" title="Etiqueta personalizada">${item}</label>
+                        <button type="button" onclick="deleteCustomTag('${name}', '${item}')" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-10" title="Eliminar etiqueta">✕</button>
+                    </div>
+                `).join('');
+            }
+
+            // Botón de agregar nuevo
+            html += `<button type="button" onclick="promptAddTag('${name}')" class="inline-block px-3 py-1.5 mb-2 ml-1 bg-gray-100 dark:bg-slate-700 border border-dashed border-gray-300 dark:border-slate-500 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">+ Nuevo</button>`;
+
+            container.innerHTML = html;
+        };
+
+        const refreshFormTags = () => {
+            renderCheckboxes('emotions-container', DEFAULT_EMOTIONS, customEmotions, 'emotions');
+            renderCheckboxes('needs-container', DEFAULT_NEEDS, customNeeds, 'needs');
+        };
+
+        const populateFilters = () => {
+            const emotionSelect = document.getElementById('filter-emotion');
+            emotionSelect.innerHTML = '<option value="">Todas las Emociones</option>'; // reset
+            
+            const allEmotions = [...DEFAULT_EMOTIONS, ...customEmotions];
+            allEmotions.forEach(em => {
+                const opt = document.createElement('option');
+                opt.value = em;
+                opt.textContent = em;
+                emotionSelect.appendChild(opt);
+            });
+        };
+
+        // ==========================================
+        // ETIQUETAS PERSONALIZADAS
+        // ==========================================
+        window.promptAddTag = async (type) => {
+            const label = type === 'emotions' ? 'emoción' : 'necesidad';
+            const newTag = prompt(`Escribe una nueva ${label} para agregar a tu lista:`);
+            
+            if (!newTag || !newTag.trim()) return;
+            const formattedTag = capitalizeFirstLetter(newTag);
+            
+            const me = appUsers.find(u => u.uid === activeUserId);
+            if (!me) return;
+
+            const field = type === 'emotions' ? 'customEmotions' : 'customNeeds';
+            const currentList = me[field] || [];
+            const defaultList = type === 'emotions' ? DEFAULT_EMOTIONS : DEFAULT_NEEDS;
+            
+            if (currentList.includes(formattedTag) || defaultList.includes(formattedTag)) {
+                return showToast("Esa etiqueta ya existe en tu lista", "error");
+            }
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', me.id), {
+                    [field]: [...currentList, formattedTag]
+                });
+                showToast(`${capitalizeFirstLetter(label)} agregada`, "success");
+            } catch(e) {
+                showToast("Error al guardar la etiqueta", "error");
+            }
+        };
+
+        window.deleteCustomTag = async (type, tagToDelete) => {
+            if (!confirm(`¿Seguro que deseas eliminar la etiqueta "${tagToDelete}" de tus opciones? (No se borrará de los registros anteriores)`)) return;
+            
+            const me = appUsers.find(u => u.uid === activeUserId);
+            if (!me) return;
+
+            const field = type === 'emotions' ? 'customEmotions' : 'customNeeds';
+            const currentList = me[field] || [];
+            const newList = currentList.filter(t => t !== tagToDelete);
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', me.id), {
+                    [field]: newList
+                });
+                showToast("Etiqueta eliminada", "success");
+            } catch(e) {
+                showToast("Error al eliminar", "error");
+            }
         };
 
         // ==========================================
@@ -723,6 +1187,7 @@
             document.getElementById('user-greeting').textContent = `Hola, ${activeUserName}`;
             setupPrivateListeners();
             navigate('dashboard');
+            requestNotificationPermission();
             showToast(`Bienvenido/a, ${activeUserName}`, 'success');
         };
 
@@ -733,12 +1198,15 @@
             const pw = document.getElementById('auth-password').value.trim();
             if(!un || !pw) return;
 
+            // Insensibilidad a mayúsculas/minúsculas para validaciones internas
+            const normUn = un.toLowerCase();
+            const normPw = pw.toLowerCase();
+
             if (isLoginMode) {
-                // Iniciar sesión
-                const user = appUsers.find(u => u.username === un && u.password === pw);
+                const user = appUsers.find(u => (u.username || '').toLowerCase() === normUn && (u.password || '').toLowerCase() === normPw);
                 if (user) {
                     activeUserId = user.uid;
-                    activeUserName = user.username;
+                    activeUserName = user.username; 
                     sessionStorage.setItem('be_userid', activeUserId);
                     sessionStorage.setItem('be_username', activeUserName);
                     finishLogin();
@@ -747,25 +1215,32 @@
                     authError.classList.remove('hidden');
                 }
             } else {
-                // Registrar
-                if (appUsers.find(u => u.username === un)) {
+                if (appUsers.find(u => (u.username || '').toLowerCase() === normUn)) {
                     authError.textContent = "El usuario ya existe. Intenta con otro o inicia sesión.";
                     authError.classList.remove('hidden');
                 } else {
                     try {
-                        const newUid = crypto.randomUUID(); // Identificador interno para sus datos privados
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'app_users'), {
-                            username: un,
-                            password: pw,
-                            uid: newUid
+                        const usersCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
+                        const newUserDocRef = doc(usersCollectionRef); 
+                        
+                        const displayUn = capitalizeFirstLetter(un);
+
+                        await setDoc(newUserDocRef, {
+                            username: displayUn,
+                            password: normPw, 
+                            uid: newUserDocRef.id,
+                            customEmotions: [],
+                            customNeeds: []
                         });
-                        activeUserId = newUid;
-                        activeUserName = un;
+
+                        activeUserId = newUserDocRef.id;
+                        activeUserName = displayUn;
                         sessionStorage.setItem('be_userid', activeUserId);
                         sessionStorage.setItem('be_username', activeUserName);
                         finishLogin();
                     } catch (err) {
-                        authError.textContent = "Error al registrar el usuario.";
+                        console.error("Error en base de datos:", err);
+                        authError.textContent = "Hubo un error al registrar: " + err.message;
                         authError.classList.remove('hidden');
                     }
                 }
@@ -778,43 +1253,64 @@
             window.location.reload();
         };
 
-        const initAuthFlow = async () => {
-            if(!auth) return;
-            
-            try {
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Error al iniciar sesión anónima en Firebase:", error);
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    setupPublicListeners();
-                }
-            });
-        };
-
         // ==========================================
         // BASE DE DATOS Y LISTENERS
         // ==========================================
-        const setupPublicListeners = () => {
-            if (!currentUser || !db) return;
+        const updateSharedHeaderUI = () => {
+            const meImg = document.getElementById('shared-avatar-me');
+            const partnerImg = document.getElementById('shared-avatar-partner');
+            
+            if (currentUserProfilePic) meImg.src = currentUserProfilePic;
+            if (partnerProfilePic) partnerImg.src = partnerProfilePic;
+        };
 
-            // Usuarios de la aplicación (para Auth simulado)
+        const setupPublicListeners = () => {
+            if (!db) return;
+
             const usersPath = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
             onSnapshot(usersPath, (snapshot) => {
                 appUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // Si la sesión ya estaba activa en el navegador, entramos directamente
+                if (activeUserId) {
+                    const me = appUsers.find(u => u.uid === activeUserId);
+                    if (me) {
+                        currentUserProfilePic = me.profilePic || 'https://ui-avatars.com/api/?name=' + activeUserName + '&background=1E3A8A&color=fff&size=128';
+                        document.getElementById('header-avatar').src = currentUserProfilePic;
+                        document.getElementById('profile-modal-img').src = currentUserProfilePic;
+                        
+                        // Cargar etiquetas personalizadas
+                        customEmotions = me.customEmotions || [];
+                        customNeeds = me.customNeeds || [];
+                        refreshFormTags();
+                        populateFilters();
+                    }
+                    
+                    const partner = appUsers.find(u => u.uid !== activeUserId);
+                    if (partner) {
+                        partnerProfilePic = partner.profilePic || 'https://ui-avatars.com/api/?name=' + partner.username + '&background=D4AF37&color=fff&size=128';
+                    } else {
+                        partnerProfilePic = 'https://ui-avatars.com/api/?name=?&background=cbd5e1&color=fff&size=128';
+                    }
+                    updateSharedHeaderUI();
+                }
+
                 if(activeUserId && activeUserName && document.getElementById('app-container').classList.contains('hidden')) {
                     finishLogin();
                 }
-            }, (error) => console.error("Error users:", error));
+            }, (error) => console.error("Error al cargar usuarios:", error));
 
-            // Colección Pública (Compartida)
             const publicPath = collection(db, 'artifacts', appId, 'public', 'data', 'shared_emotions');
             onSnapshot(publicPath, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added" && !isInitialSharedLoad) {
+                        const data = change.doc.data();
+                        if (data.authorId !== activeUserId) {
+                            showBrowserNotification("Bitácora Emocional", `${data.authorName} ha compartido un registro en el espacio de pareja.`);
+                        }
+                    }
+                });
+                isInitialSharedLoad = false;
+
                 sharedLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 sharedLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
                 renderSharedLogs();
@@ -824,11 +1320,14 @@
         const setupPrivateListeners = () => {
             if (!activeUserId || !db) return;
 
-            // Colección Privada (aislada por activeUserId generado al registrarse)
             const privatePath = collection(db, 'artifacts', appId, 'users', activeUserId, 'emotions');
             onSnapshot(privatePath, (snapshot) => {
                 privateLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                privateLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                privateLogs.sort((a, b) => {
+                    let dateA = new Date(a.eventDate ? a.eventDate : a.date);
+                    let dateB = new Date(b.eventDate ? b.eventDate : b.date);
+                    return dateB - dateA;
+                });
                 updateDashboard();
                 renderMyLogs();
             }, (error) => console.error("Error private:", error));
@@ -840,33 +1339,39 @@
         window.openLogForm = () => {
             document.getElementById('emotion-log-form').reset();
             document.getElementById('log-id').value = '';
-            // Reset custom visual tags
+            document.getElementById('log-event-date').value = new Date().toISOString().split('T')[0];
+            
             document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
             openFullPanel('log-form-panel');
         };
 
         document.getElementById('emotion-log-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(!currentUser || !db) return showToast("Error de conexión", "error");
+            if(!activeUserId || !db) return showToast("Error de conexión", "error");
 
             const form = e.target;
-            const id = document.getElementById('log-id').value || crypto.randomUUID();
+            const emotionsColl = collection(db, 'artifacts', appId, 'users', activeUserId, 'emotions');
+            const newDocRef = doc(emotionsColl);
+            const id = document.getElementById('log-id').value || newDocRef.id;
             
-            // Recolectar datos
             const getCheckedValues = (name) => Array.from(form.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
+            const existingLog = privateLogs.find(l => l.id === id);
             
             const logData = {
-                date: document.getElementById('log-id').value ? privateLogs.find(l => l.id === id).date : new Date().toISOString(),
-                context: document.getElementById('log-context').value.trim(),
-                facts: document.getElementById('log-facts').value.trim(),
-                interpretation: document.getElementById('log-interpretation').value.trim(),
+                date: existingLog ? existingLog.date : new Date().toISOString(), 
+                eventDate: document.getElementById('log-event-date').value, 
+                context: capitalizeFirstLetter(document.getElementById('log-context').value),
+                facts: capitalizeFirstLetter(document.getElementById('log-facts').value),
+                interpretation: capitalizeFirstLetter(document.getElementById('log-interpretation').value),
                 emotions: getCheckedValues('emotions'),
                 needs: getCheckedValues('needs'),
                 intensity: parseInt(form.elements['intensity'].value, 10),
                 regulation: form.elements['regulation'].value,
                 communication: form.elements['communication'].value,
                 origin: form.elements['origin'].value,
+                closingNote: capitalizeFirstLetter(document.getElementById('log-closing-note').value),
                 visibility: form.elements['visibility'].value,
+                isResolved: existingLog ? (existingLog.isResolved || false) : false,
                 authorId: activeUserId,
                 authorName: activeUserName
             };
@@ -875,25 +1380,45 @@
             if(logData.needs.length === 0) return showToast("Selecciona al menos una necesidad", "error");
 
             try {
-                // 1. Guardar en privado
                 await setDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'emotions', id), logData);
                 
-                // 2. Sincronizar con público si corresponde
                 const publicDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'shared_emotions', id);
                 if (logData.visibility === 'Compartido') {
                     await setDoc(publicDocRef, logData);
                 } else {
-                    // Intentar borrar del público por si antes era compartido
                     await deleteDoc(publicDocRef).catch(()=>null);
                 }
 
                 closeFullPanel('log-form-panel');
                 showToast("Reflexión guardada correctamente", "success");
             } catch (error) {
-                console.error(error);
                 showToast("Error al guardar", "error");
             }
         });
+
+        window.toggleResolvedStatus = async () => {
+            const log = privateLogs.find(l => l.id === selectedLogIdForDetail);
+            if (!log) return;
+            
+            const newStatus = !log.isResolved;
+            
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'emotions', log.id), {
+                    isResolved: newStatus
+                });
+                
+                if (log.visibility === 'Compartido') {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shared_emotions', log.id), {
+                        isResolved: newStatus
+                    }).catch(()=>null);
+                }
+                
+                closeModal('log-detail-modal');
+                showToast(newStatus ? "Registro solucionado ✅" : "Registro reabierto", "success");
+            } catch (e) {
+                showToast("Error al actualizar", "error");
+            }
+        };
 
         // ==========================================
         // DASHBOARD Y MÉTRICAS
@@ -902,9 +1427,39 @@
             const total = privateLogs.length;
             document.getElementById('stat-total').textContent = total;
             
-            if (total === 0) return;
+            if (total === 0) {
+                document.getElementById('gamification-streak').textContent = '0';
+                document.getElementById('stat-self-work').innerHTML = `0<span class="text-sm text-gray-400 font-normal ml-1">(0%)</span>`;
+                return;
+            }
 
-            // Promedios y porcentajes
+            const selfWorkCount = privateLogs.filter(l => l.origin === 'Creo que es algo mío para trabajar').length;
+            const selfWorkPercent = Math.round((selfWorkCount / total) * 100);
+            document.getElementById('stat-self-work').innerHTML = `${selfWorkCount}<span class="text-sm text-gray-400 font-normal ml-1">(${selfWorkPercent}%)</span>`;
+
+            let currentStreak = 0;
+            for (let i = 0; i < privateLogs.length; i++) {
+                if (privateLogs[i].regulation === 'Regulé bien mi emoción') {
+                    currentStreak++;
+                } else {
+                    break;
+                }
+            }
+
+            document.getElementById('gamification-streak').textContent = currentStreak;
+            
+            let plantEmoji = '🌱';
+            let plantText = 'Semilla';
+            if (currentStreak >= 2) { plantEmoji = '🌿'; plantText = 'Brote de Consciencia'; }
+            if (currentStreak >= 5) { plantEmoji = '🌳'; plantText = 'Árbol Fuerte'; }
+            if (currentStreak >= 10) { plantEmoji = '✨🌳✨'; plantText = 'Bosque de Serenidad'; }
+
+            document.getElementById('gamification-icon').textContent = plantEmoji;
+            document.getElementById('gamification-text').textContent = plantText;
+
+            const resolvedCount = privateLogs.filter(l => l.isResolved).length;
+            document.getElementById('stat-resolved').textContent = resolvedCount;
+
             const sumIntensity = privateLogs.reduce((acc, log) => acc + log.intensity, 0);
             document.getElementById('stat-intensity').innerHTML = `${(sumIntensity / total).toFixed(1)}<span class="text-sm text-gray-400 font-normal">/5</span>`;
 
@@ -914,25 +1469,24 @@
             const wellRegCount = privateLogs.filter(l => l.regulation === 'Regulé bien mi emoción').length;
             document.getElementById('stat-regulation').textContent = `${Math.round((wellRegCount / total) * 100)}%`;
 
-            // Frecuencias (Moda)
             const countFrequencies = (arraySelector) => {
                 const counts = {};
                 privateLogs.forEach(log => {
                     log[arraySelector].forEach(item => { counts[item] = (counts[item] || 0) + 1; });
                 });
-                return Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5); // top 5
+                return Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5);
             };
 
             const renderBar = (item, count, totalItems) => {
                 const percent = Math.round((count / total) * 100);
                 return `
                     <div class="flex flex-col gap-1 mb-2">
-                        <div class="flex justify-between text-xs font-medium text-gray-600">
+                        <div class="flex justify-between text-xs font-medium text-gray-600 dark:text-gray-300">
                             <span>${item}</span>
                             <span>${percent}%</span>
                         </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2">
-                            <div class="bg-[var(--primary-color)] h-2 rounded-full opacity-80" style="width: ${percent}%"></div>
+                        <div class="w-full bg-gray-100 dark:bg-slate-600 rounded-full h-2">
+                            <div class="bg-[var(--primary-color)] dark:bg-blue-400 h-2 rounded-full opacity-80" style="width: ${percent}%"></div>
                         </div>
                     </div>
                 `;
@@ -945,121 +1499,292 @@
             document.getElementById('chart-needs').innerHTML = topNeeds.map(n => renderBar(n[0], n[1])).join('');
         };
 
-        window.generateWeeklySummary = () => {
-            const now = new Date();
-            const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            
-            const weeklyLogs = privateLogs.filter(l => new Date(l.date) >= lastWeek);
-            
-            let html = `<div style="font-family: 'Inter', sans-serif; color: #334155;">`;
-            html += `<h2 style="color: #1E3A8A; font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">Resumen Reflexivo (Últimos 7 días)</h2>`;
-            
-            if(weeklyLogs.length === 0) {
-                html += `<p>No has registrado reflexiones en la última semana.</p>`;
-            } else {
-                html += `<ul style="list-style-type: none; padding: 0; margin: 0;">`;
-                html += `<li style="margin-bottom: 0.5rem;">📝 <strong style="color: #1E3A8A;">Total de situaciones analizadas:</strong> ${weeklyLogs.length}</li>`;
-                
-                const avgInt = (weeklyLogs.reduce((sum, l) => sum + l.intensity, 0) / weeklyLogs.length).toFixed(1);
-                html += `<li style="margin-bottom: 0.5rem;">📊 <strong style="color: #1E3A8A;">Intensidad emocional promedio:</strong> ${avgInt}/5</li>`;
-                
-                const wellReg = weeklyLogs.filter(l => l.regulation === 'Regulé bien mi emoción').length;
-                html += `<li style="margin-bottom: 1rem;">🧘 <strong style="color: #1E3A8A;">Regulación consciente:</strong> Lo lograste en el ${Math.round((wellReg/weeklyLogs.length)*100)}% de los casos.</li>`;
-                
-                // Emoción principal
-                const ems = {}; weeklyLogs.forEach(l => l.emotions.forEach(e => ems[e] = (ems[e]||0)+1));
-                const topEm = Object.entries(ems).sort((a,b)=>b[1]-a[1])[0];
-                if(topEm) html += `<li style="margin-bottom: 0.5rem; background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem;">💡 <strong style="color: #D4AF37;">Emoción más presente:</strong> ${topEm[0]}</li>`;
-                
-                const needs = {}; weeklyLogs.forEach(l => l.needs.forEach(n => needs[n] = (needs[n]||0)+1));
-                const topNeed = Object.entries(needs).sort((a,b)=>b[1]-a[1])[0];
-                if(topNeed) html += `<li style="margin-bottom: 0.5rem; background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem;">🌱 <strong style="color: #D4AF37;">Necesidad más frecuente:</strong> ${topNeed[0]}</li>`;
-                
-                html += `</ul>`;
-                html += `<p style="margin-top: 1.5rem; font-size: 0.875rem; color: #64748b; font-style: italic;">Nota: Este registro es para tu autoconocimiento. Reconocer tus patrones es el primer paso para transformarlos.</p>`;
-            }
-            html += `</div>`;
-            
-            document.getElementById('summary-content').innerHTML = html;
-            openModal('summary-modal');
+        // ==========================================
+        // GENERADOR DE ANÁLISIS (IA Y PDF)
+        // ==========================================
+        let currentReportText = ''; 
+        let currentReportHtml = '';
+
+        window.openReportModal = () => {
+            document.getElementById('report-config-area').classList.remove('hidden');
+            document.getElementById('report-result-area').classList.add('hidden');
+            openModal('report-modal');
         };
 
-        window.downloadPDF = () => {
-            const element = document.getElementById('summary-content');
+        window.prepareReport = () => {
+            const period = document.getElementById('report-period').value;
+            const scope = document.getElementById('report-scope').value;
+            
+            let logsToProcess = scope === 'shared' ? sharedLogs : privateLogs;
+            
+            const now = new Date();
+            if (period === 'week') {
+                const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                logsToProcess = logsToProcess.filter(l => new Date(l.eventDate || l.date.split('T')[0]) >= lastWeek);
+            } else if (period === 'month') {
+                const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                logsToProcess = logsToProcess.filter(l => new Date(l.eventDate || l.date.split('T')[0]) >= lastMonth);
+            }
+
+            if (logsToProcess.length === 0) {
+                showToast("No hay registros en el periodo seleccionado.", "error");
+                return;
+            }
+
+            let promptText = "Actúa como un psicólogo clínico experto en terapia de pareja y comunicación no violenta. A continuación te presento un registro de situaciones de conflicto anotadas por uno o ambos miembros de la pareja. Tu objetivo no es buscar culpables ni juzgar, sino identificar: 1) Patrones repetitivos (triggers o desencadenantes), 2) Necesidades subyacentes no cubiertas, 3) Áreas de mejora en la regulación emocional individual. Sé objetivo, empático y sugiere dos ejercicios prácticos que podamos hacer para mejorar nuestra dinámica. Aquí están los datos estructurados:\n\n";
+
+            let pdfHtml = `<div style="font-family: 'Helvetica', 'Arial', sans-serif; color: #333;">`;
+            pdfHtml += `<h1 style="color: #1E3A8A; font-size: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 5px;">Análisis de Bitácora Emocional</h1>`;
+            pdfHtml += `<p style="color: #666; font-size: 14px; margin-bottom: 20px;">Reporte generado con ${logsToProcess.length} registros estructurados para análisis terapéutico.</p>`;
+
+            logsToProcess.forEach((log, i) => {
+                const d = new Date(log.eventDate ? log.eventDate + 'T12:00:00' : log.date).toLocaleDateString('es-AR');
+                const resolvedTag = log.isResolved ? ' [RESUELTO]' : '';
+                
+                promptText += `--- SITUACIÓN ${i+1}${resolvedTag} ---\n`;
+                promptText += `- Fecha: ${d}\n`;
+                promptText += `- Afectado/a: ${log.authorName}\n`;
+                promptText += `- Contexto: ${log.context}\n`;
+                promptText += `- Hechos objetivos: ${log.facts}\n`;
+                promptText += `- Interpretación mental: ${log.interpretation}\n`;
+                promptText += `- Emociones: ${log.emotions.join(', ')} (Intensidad: ${log.intensity}/5)\n`;
+                promptText += `- Necesidades vulneradas: ${log.needs.join(', ')}\n`;
+                promptText += `- Regulación mostrada: ${log.regulation}\n`;
+                if (log.closingNote) promptText += `- Reencuadre posterior: ${log.closingNote}\n`;
+                promptText += `\n`;
+
+                pdfHtml += `<div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa; break-inside: avoid;">`;
+                pdfHtml += `<h3 style="margin: 0 0 10px 0; color: #1E3A8A; font-size: 16px;">${i+1}. ${log.context} <span style="color:#888; font-size:12px; font-weight:normal;">(${d}) - Analizado por: ${log.authorName}</span> ${log.isResolved ? '<span style="color:green; font-size:12px;">✅ Resuelto</span>' : ''}</h3>`;
+                pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Hechos:</strong> ${log.facts}</p>`;
+                pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Interpretación:</strong> ${log.interpretation}</p>`;
+                pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Emociones:</strong> ${log.emotions.join(', ')} <span style="color:#D4AF37; font-weight:bold;">(Intensidad: ${log.intensity}/5)</span></p>`;
+                pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Necesidades:</strong> ${log.needs.join(', ')}</p>`;
+                pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Regulación:</strong> ${log.regulation}</p>`;
+                if (log.closingNote) {
+                    pdfHtml += `<p style="margin: 8px 0 0 0; padding: 8px; background-color: #fffbeb; color: #92400e; border-left: 3px solid #f59e0b; font-size:13px;"><strong>Reencuadre Posterior:</strong> ${log.closingNote}</p>`;
+                }
+                pdfHtml += `</div>`;
+            });
+
+            pdfHtml += `</div>`;
+
+            currentReportText = promptText;
+            currentReportHtml = pdfHtml;
+
+            document.getElementById('report-success-msg').textContent = `¡Datos listos! (${logsToProcess.length} registros compilados)`;
+            document.getElementById('report-config-area').classList.add('hidden');
+            document.getElementById('report-result-area').classList.remove('hidden');
+        };
+
+        window.copyReportText = () => {
+            navigator.clipboard.writeText(currentReportText).then(() => {
+                showToast("¡Copiado! Abre ChatGPT y pégalo en el chat.", "success");
+            }).catch(() => showToast("Error al copiar", "error"));
+        };
+
+        window.downloadReportPDF = () => {
+            const container = document.getElementById('hidden-pdf-container');
+            container.innerHTML = currentReportHtml;
+            container.style.display = 'block'; 
+            
+            showToast("Generando documento PDF...", "info");
+
             const opt = {
-              margin:       15,
-              filename:     'Bitacora_Resumen_Semanal.pdf',
-              image:        { type: 'jpeg', quality: 0.98 },
-              html2canvas:  { scale: 2, useCORS: true },
-              jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin:       10,
+                filename:     'Bitacora_Analisis_Clinico.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            html2pdf().set(opt).from(element).save().then(() => {
-                showToast("Descarga iniciada", "success");
+            html2pdf().set(opt).from(container).save().then(() => {
+                container.style.display = 'none'; 
+                showToast("¡Descarga completada!", "success");
             }).catch(err => {
+                container.style.display = 'none';
                 showToast("Error al generar PDF", "error");
             });
         };
 
         // ==========================================
-        // RENDERIZADO DE LISTAS
+        // RENDERIZADO Y PERFIL
         // ==========================================
+        window.openProfileModal = () => {
+            const me = appUsers.find(u => u.uid === activeUserId);
+            if(me) {
+                document.getElementById('edit-profile-username').value = me.username || '';
+                document.getElementById('edit-profile-password').value = '';
+            }
+            openModal('profile-modal');
+        };
+
+        window.saveProfileChanges = async () => {
+            const me = appUsers.find(u => u.uid === activeUserId);
+            if(!me) return;
+
+            let newUn = document.getElementById('edit-profile-username').value.trim();
+            let newPw = document.getElementById('edit-profile-password').value.trim();
+
+            if(!newUn) return showToast("El nombre de usuario no puede estar vacío", "error");
+
+            const normUn = newUn.toLowerCase();
+            const exists = appUsers.find(u => (u.username || '').toLowerCase() === normUn && u.uid !== activeUserId);
+            if (exists) return showToast("Ese nombre de usuario ya está en uso", "error");
+
+            const displayUn = capitalizeFirstLetter(newUn);
+            let updates = { username: displayUn };
+            if(newPw) updates.password = newPw.toLowerCase(); 
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', me.id), updates);
+                activeUserName = displayUn;
+                sessionStorage.setItem('be_username', displayUn);
+                document.getElementById('user-greeting').textContent = `Hola, ${displayUn}`;
+                closeModal('profile-modal');
+                showToast("Perfil actualizado", "success");
+            } catch (e) {
+                showToast("Error al actualizar perfil", "error");
+            }
+        };
+
+        window.handleProfilePicUpload = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 250; 
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    
+                    document.getElementById('profile-modal-img').src = dataUrl;
+                    document.getElementById('header-avatar').src = dataUrl;
+                    
+                    const userDoc = appUsers.find(u => u.uid === activeUserId);
+                    if (userDoc && userDoc.id) {
+                        updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', userDoc.id), {
+                            profilePic: dataUrl
+                        }).then(() => showToast("Foto de perfil actualizada", "success"))
+                          .catch(() => showToast("Error al guardar", "error"));
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.applyFilters = () => {
+            currentFilters.emotion = document.getElementById('filter-emotion').value;
+            currentFilters.intensity = document.getElementById('filter-intensity').value;
+            currentFilters.date = document.getElementById('filter-date').value;
+            renderMyLogs();
+        };
+
         const createLogCard = (log, isSharedView = false) => {
-            const dateObj = new Date(log.date);
-            const dateStr = dateObj.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: 'short' });
+            const eventDateObj = new Date(log.eventDate ? log.eventDate + 'T12:00:00' : log.date);
+            const dateStr = eventDateObj.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: 'short' });
             
-            let regColor = log.regulation === 'Regulé bien mi emoción' ? 'text-green-600 bg-green-50' : 
-                           log.regulation === 'Me costó regularla' ? 'text-orange-600 bg-orange-50' : 'text-red-600 bg-red-50';
+            let regColor = log.regulation === 'Regulé bien mi emoción' ? 'text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400' : 
+                           log.regulation === 'Me costó regularla' ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/30 dark:text-orange-400' : 'text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400';
             
             const intensityDots = Array(5).fill(0).map((_, i) => 
-                `<span class="w-2 h-2 rounded-full ${i < log.intensity ? 'bg-[var(--secondary-color)]' : 'bg-gray-200'}"></span>`
+                `<span class="w-2 h-2 rounded-full ${i < log.intensity ? 'bg-[var(--secondary-color)]' : 'bg-gray-200 dark:bg-slate-600'}"></span>`
             ).join('');
 
+            const hasClosing = log.closingNote && log.closingNote.trim().length > 0;
+            const closingBadge = hasClosing ? `<span title="Tiene nota de reencuadre" class="ml-2 inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>` : '';
+
+            const isResolvedStyle = log.isResolved ? 'opacity-80 bg-gray-50 dark:bg-slate-800/80 border-emerald-100 dark:border-emerald-900' : '';
+            const resolvedCheck = log.isResolved ? `<span class="absolute -top-3 -right-3 bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-300 w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center font-bold shadow-sm" title="Solucionado">✓</span>` : '';
+
             return `
-                <div onclick="openLogDetail('${log.id}', ${isSharedView})" class="card p-4 cursor-pointer hover:-translate-y-1 hover:shadow-md transition-all">
+                <div onclick="openLogDetail('${log.id}', ${isSharedView})" class="card p-4 cursor-pointer hover:-translate-y-1 hover:shadow-md transition-all relative ${isResolvedStyle}">
+                    ${resolvedCheck}
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">${dateStr}</span>
-                            <h3 class="text-lg font-semibold text-gray-800 line-clamp-1">${log.context}</h3>
+                            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">${dateStr}</span>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white line-clamp-1">${log.context} ${closingBadge}</h3>
                         </div>
                         <div class="flex gap-1 items-center" title="Intensidad: ${log.intensity}/5">
                             ${intensityDots}
                         </div>
                     </div>
                     
-                    <p class="text-sm text-gray-600 line-clamp-2 mb-3">${log.facts}</p>
-                    
-                    <div class="flex flex-wrap items-center justify-between gap-2 border-t pt-3 mt-auto">
-                        <div class="flex gap-2">
-                            ${log.emotions.slice(0,2).map(e => `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md border border-gray-200">${e}</span>`).join('')}
-                            ${log.emotions.length > 2 ? `<span class="text-xs text-gray-400">+${log.emotions.length-2}</span>` : ''}
-                        </div>
-                        
-                        ${isSharedView ? 
-                            `<span class="text-xs font-medium px-2 py-1 rounded-md bg-blue-50 text-[var(--primary-color)]">👤 ${log.authorName}</span>` : 
-                            `<span class="text-xs font-medium px-2 py-1 rounded-md ${regColor}">${log.regulation.split(' ')[0]}</span>`
-                        }
-                    </div>
+                    ${isSharedView ? 
+                        `<span class="text-xs font-medium px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 text-[var(--primary-color)] dark:text-blue-300">👤 ${log.authorName}</span>` : 
+                        `<span class="text-xs font-medium px-2 py-1 rounded-md ${regColor}">${log.regulation.split(' ')[0]}</span>`
+                    }
                 </div>
             `;
         };
 
-        const renderMyLogs = () => {
-            const container = document.getElementById('my-logs-container');
-            if(privateLogs.length === 0) {
-                container.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">Aún no tienes registros.</p><p class="text-sm text-gray-400 mt-1">Comienza tu bitácora agregando una nueva reflexión.</p></div>`;
+        const renderGroupedLogs = (logsToRender, containerId, isSharedView) => {
+            const container = document.getElementById(containerId);
+            
+            if(logsToRender.length === 0) {
+                if (containerId === 'my-logs-container' && privateLogs.length === 0) {
+                    container.innerHTML = `<div class="text-center p-8 bg-white dark:bg-slate-800 rounded-xl border border-dashed border-gray-300 dark:border-slate-600"><p class="text-gray-500 dark:text-gray-400">Aún no tienes registros.</p><p class="text-sm text-gray-400 mt-1">Comienza tu bitácora agregando una nueva reflexión.</p></div>`;
+                } else {
+                    container.innerHTML = `<div class="text-center p-8 bg-white dark:bg-slate-800 rounded-xl border border-dashed border-gray-300 dark:border-slate-600"><p class="text-gray-500 dark:text-gray-400">No hay registros que mostrar.</p></div>`;
+                }
                 return;
             }
-            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">` + privateLogs.map(l => createLogCard(l, false)).join('') + `</div>`;
+
+            const groups = [];
+            logsToRender.forEach(log => {
+                const d = new Date(log.eventDate ? log.eventDate + 'T12:00:00' : log.date);
+                const monthYear = d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+                const formattedMonthYear = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+                
+                let group = groups.find(g => g.label === formattedMonthYear);
+                if (!group) {
+                    group = { label: formattedMonthYear, logs: [] };
+                    groups.push(group);
+                }
+                group.logs.push(log);
+            });
+
+            let html = '';
+            groups.forEach(group => {
+                html += `
+                    <div class="mb-6 relative">
+                        <h3 class="sticky top-0 bg-[var(--background-color)]/95 backdrop-blur-sm py-2 text-lg font-bold text-gray-700 dark:text-gray-300 z-10 border-b border-gray-200 dark:border-slate-700 mb-3 capitalize shadow-sm">${group.label}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${group.logs.map(l => createLogCard(l, isSharedView)).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        };
+
+        const renderMyLogs = () => {
+            let filteredLogs = privateLogs;
+            
+            if (currentFilters.emotion) {
+                filteredLogs = filteredLogs.filter(l => l.emotions.includes(currentFilters.emotion));
+            }
+            if (currentFilters.intensity) {
+                filteredLogs = filteredLogs.filter(l => l.intensity == currentFilters.intensity);
+            }
+            if (currentFilters.date) {
+                filteredLogs = filteredLogs.filter(l => (l.eventDate || l.date.split('T')[0]) === currentFilters.date);
+            }
+
+            renderGroupedLogs(filteredLogs, 'my-logs-container', false);
         };
 
         const renderSharedLogs = () => {
-            const container = document.getElementById('shared-logs-container');
-            if(sharedLogs.length === 0) {
-                container.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">No hay registros compartidos.</p><p class="text-sm text-gray-400 mt-1">Los registros que marquen como "Compartidos" aparecerán aquí.</p></div>`;
-                return;
-            }
-            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">` + sharedLogs.map(l => createLogCard(l, true)).join('') + `</div>`;
+            renderGroupedLogs(sharedLogs, 'shared-logs-container', true);
         };
 
         // ==========================================
@@ -1072,24 +1797,61 @@
             selectedLogIdForDetail = log.id;
 
             document.getElementById('detail-context').textContent = log.context;
-            document.getElementById('detail-date').textContent = new Date(log.date).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' });
+            
+            const eventDateObj = new Date(log.eventDate ? log.eventDate + 'T12:00:00' : log.date);
+            document.getElementById('detail-date').textContent = "📅 " + eventDateObj.toLocaleDateString('es-AR', { dateStyle: 'full' });
+            
+            const createdObj = new Date(log.date);
+            document.getElementById('detail-created').textContent = "Escrito el: " + createdObj.toLocaleDateString('es-AR', { dateStyle: 'short' }) + " a las " + createdObj.toLocaleTimeString('es-AR', { timeStyle: 'short' });
             
             document.getElementById('detail-facts').textContent = log.facts;
             document.getElementById('detail-interpretation').textContent = log.interpretation;
             
-            document.getElementById('detail-emotions').innerHTML = log.emotions.map(e => `<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-medium">${e}</span>`).join('');
-            document.getElementById('detail-needs').innerHTML = log.needs.map(n => `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded text-xs font-medium">${n}</span>`).join('');
+            document.getElementById('detail-emotions').innerHTML = log.emotions.map(e => `<span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded text-xs font-medium">${e}</span>`).join('');
+            document.getElementById('detail-needs').innerHTML = log.needs.map(n => `<span class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded text-xs font-medium">${n}</span>`).join('');
             
             document.getElementById('detail-intensity').textContent = `${log.intensity} / 5`;
             document.getElementById('detail-regulation').textContent = log.regulation;
             document.getElementById('detail-communication').textContent = log.communication;
             document.getElementById('detail-origin').textContent = log.origin;
 
+            const resolvedBadge = document.getElementById('detail-resolved-badge');
+            const resolveBtn = document.getElementById('btn-toggle-resolve');
+            
+            if (log.isResolved) {
+                resolvedBadge.classList.remove('hidden');
+                resolveBtn.textContent = 'Reabrir Registro';
+                resolveBtn.classList.replace('bg-emerald-50', 'bg-gray-100');
+                resolveBtn.classList.replace('text-emerald-700', 'text-gray-700');
+                resolveBtn.classList.replace('dark:bg-emerald-900/30', 'dark:bg-slate-700');
+                resolveBtn.classList.replace('dark:text-emerald-400', 'dark:text-gray-300');
+            } else {
+                resolvedBadge.classList.add('hidden');
+                resolveBtn.textContent = 'Marcar como Solucionado';
+                resolveBtn.classList.replace('bg-gray-100', 'bg-emerald-50');
+                resolveBtn.classList.replace('text-gray-700', 'text-emerald-700');
+                resolveBtn.classList.replace('dark:bg-slate-700', 'dark:bg-emerald-900/30');
+                resolveBtn.classList.replace('dark:text-gray-300', 'dark:text-emerald-400');
+            }
+
+            const closingContainer = document.getElementById('detail-closing-container');
+            if (log.closingNote && log.closingNote.trim().length > 0) {
+                document.getElementById('detail-closing-note').textContent = log.closingNote;
+                closingContainer.classList.remove('hidden');
+            } else {
+                closingContainer.classList.add('hidden');
+            }
+
             const badge = document.getElementById('detail-author-badge');
             if(isSharedView) {
                 badge.classList.remove('hidden');
                 document.getElementById('detail-author-name').textContent = log.authorName;
-                document.getElementById('detail-actions').classList.add('hidden');
+                
+                if (log.authorId === activeUserId) {
+                    document.getElementById('detail-actions').classList.remove('hidden');
+                } else {
+                    document.getElementById('detail-actions').classList.add('hidden');
+                }
             } else {
                 badge.classList.add('hidden');
                 document.getElementById('detail-actions').classList.remove('hidden');
@@ -1108,8 +1870,10 @@
             const form = document.getElementById('emotion-log-form');
             document.getElementById('log-id').value = log.id;
             document.getElementById('log-context').value = log.context;
+            document.getElementById('log-event-date').value = log.eventDate || log.date.split('T')[0];
             document.getElementById('log-facts').value = log.facts;
             document.getElementById('log-interpretation').value = log.interpretation;
+            document.getElementById('log-closing-note').value = log.closingNote || '';
             
             log.emotions.forEach(e => {
                 const cb = document.getElementById(`emotions-${e}`);
@@ -1128,13 +1892,11 @@
         };
 
         window.deleteCurrentLog = async () => {
-            if(!confirm("¿Eliminar esta reflexión de forma permanente?")) return;
+            if(!confirm("¿Eliminar esta reflexión de forma permanente? Se borrará todo, incluyendo la nota de cierre si la tiene.")) return;
             
             const id = selectedLogIdForDetail;
             try {
-                // Borrar privado
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'emotions', id));
-                // Borrar público
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shared_emotions', id)).catch(()=>null);
                 
                 closeModal('log-detail-modal');
@@ -1148,9 +1910,14 @@
         // INIT
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
-            renderCheckboxes('emotions-container', EMOTIONS_LIST, 'emotions');
-            renderCheckboxes('needs-container', NEEDS_LIST, 'needs');
-            initAuthFlow();
+            setupPWA();
+            // Refresco inicial de la UI del botón oscuro en caso de FOUC bypass
+            const isDark = document.documentElement.classList.contains('dark');
+            document.querySelectorAll('.dark-mode-icon').forEach(el => el.textContent = isDark ? '🌙' : '🌞');
+            
+            refreshFormTags();
+            populateFilters();
+            setupPublicListeners();
         });
 
     </script>
