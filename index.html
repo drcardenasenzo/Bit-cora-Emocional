@@ -1274,6 +1274,12 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
             document.getElementById('user-greeting').textContent = `Hola, ${activeUserName}`;
+            
+            // Forzar actualización inmediata de avatares en la UI al loguearse
+            if (typeof loadUserAvatarsAndData === 'function') {
+                loadUserAvatarsAndData();
+            }
+
             setupPrivateListeners();
             navigate('dashboard');
             requestNotificationPermission();
@@ -1351,6 +1357,29 @@
             if (partnerProfilePic) partnerImg.src = partnerProfilePic;
         };
 
+        function loadUserAvatarsAndData() {
+            if (!activeUserId) return;
+            const me = appUsers.find(u => u.uid === activeUserId);
+            if (me) {
+                currentUserProfilePic = me.profilePic || 'https://ui-avatars.com/api/?name=' + activeUserName + '&background=1E3A8A&color=fff&size=128';
+                document.getElementById('header-avatar').src = currentUserProfilePic;
+                document.getElementById('profile-modal-img').src = currentUserProfilePic;
+                
+                customEmotions = me.customEmotions || [];
+                customNeeds = me.customNeeds || [];
+                refreshFormTags();
+                populateFilters();
+            }
+            
+            const partner = appUsers.find(u => u.uid !== activeUserId);
+            if (partner) {
+                partnerProfilePic = partner.profilePic || 'https://ui-avatars.com/api/?name=' + partner.username + '&background=D4AF37&color=fff&size=128';
+            } else {
+                partnerProfilePic = 'https://ui-avatars.com/api/?name=?&background=cbd5e1&color=fff&size=128';
+            }
+            updateSharedHeaderUI();
+        }
+
         const setupPublicListeners = () => {
             if (!db) return;
 
@@ -1359,25 +1388,7 @@
                 appUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 if (activeUserId) {
-                    const me = appUsers.find(u => u.uid === activeUserId);
-                    if (me) {
-                        currentUserProfilePic = me.profilePic || 'https://ui-avatars.com/api/?name=' + activeUserName + '&background=1E3A8A&color=fff&size=128';
-                        document.getElementById('header-avatar').src = currentUserProfilePic;
-                        document.getElementById('profile-modal-img').src = currentUserProfilePic;
-                        
-                        customEmotions = me.customEmotions || [];
-                        customNeeds = me.customNeeds || [];
-                        refreshFormTags();
-                        populateFilters();
-                    }
-                    
-                    const partner = appUsers.find(u => u.uid !== activeUserId);
-                    if (partner) {
-                        partnerProfilePic = partner.profilePic || 'https://ui-avatars.com/api/?name=' + partner.username + '&background=D4AF37&color=fff&size=128';
-                    } else {
-                        partnerProfilePic = 'https://ui-avatars.com/api/?name=?&background=cbd5e1&color=fff&size=128';
-                    }
-                    updateSharedHeaderUI();
+                    loadUserAvatarsAndData();
                 }
 
                 if(activeUserId && activeUserName && document.getElementById('app-container').classList.contains('hidden')) {
@@ -1737,6 +1748,8 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            showToast("Procesando imagen...", "info");
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 const img = new Image();
@@ -1745,7 +1758,7 @@
                     const MAX_WIDTH = 300; 
                     
                     let scaleSize = MAX_WIDTH / img.width;
-                    if (scaleSize > 1) scaleSize = 1; // Previene estirar imágenes pequeñas
+                    if (scaleSize > 1) scaleSize = 1; 
 
                     canvas.width = img.width * scaleSize;
                     canvas.height = img.height * scaleSize;
@@ -1753,24 +1766,33 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     
-                    // Comprimir en JPEG para garantizar límite de Firebase
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     
+                    // ACTUALIZACIÓN OPTIMISTA (Instantánea en la UI)
+                    currentUserProfilePic = dataUrl;
                     document.getElementById('profile-modal-img').src = dataUrl;
                     document.getElementById('header-avatar').src = dataUrl;
+                    updateSharedHeaderUI();
                     
+                    // SUBIDA A LA NUBE
                     const userDoc = appUsers.find(u => u.uid === activeUserId);
                     if (userDoc && userDoc.id) {
                         updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', userDoc.id), {
                             profilePic: dataUrl
-                        }).then(() => showToast("Foto de perfil actualizada", "success"))
-                          .catch((err) => showToast("Error al guardar en la nube: " + err.message, "error"));
+                        }).then(() => {
+                            showToast("Foto guardada en la nube", "success");
+                        }).catch((err) => {
+                            showToast("Error al guardar en la nube: " + err.message, "error");
+                        });
                     }
                 };
                 img.onerror = () => showToast("El archivo no es una imagen válida", "error");
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+            
+            // Limpiamos el input para permitir volver a cargar la misma imagen si hubo un error
+            e.target.value = '';
         };
 
         window.applyFilters = () => {
