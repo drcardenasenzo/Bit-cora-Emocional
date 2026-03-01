@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora Emocional | Crecimiento y Reflexión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para generar el PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Paleta original solicitada, adaptada para transmitir calma */
+            --primary-color: #1E3A8A; /* Azul Oscuro */
+            --secondary-color: #D4AF37; /* Dorado/Amarillo */
+            --background-color: #f8fafc; /* Gris/Azul muy claro, más suave */
+            --text-color: #334155;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background-color: #1e3a8aed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        }
+
+        .secondary-btn {
+            background-color: #f1f5f9;
+            color: var(--primary-color);
+            font-weight: 500;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .secondary-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        /* Paneles Full-Screen */
+        .full-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--background-color);
+            z-index: 50;
+            overflow-y: auto;
+            display: none;
+            padding: 1rem;
+        }
+
+        .full-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Modales */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 60;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: #FFFFFF;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(1rem);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Inputs y Selectores */
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--secondary-color) !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
+            outline: none;
+        }
+
+        /* Checkboxes tipo Tag */
+        .tag-checkbox {
+            display: none;
+        }
+        .tag-label {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        .tag-checkbox:checked + .tag-label {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Radio buttons visuales */
+        .radio-visual {
+            display: none;
+        }
+        .radio-visual-label {
+            display: block;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-weight: 500;
+            color: #475569;
+        }
+        .radio-visual:checked + .radio-visual-label {
+            background-color: #eff6ff;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Escala de intensidad */
+        .intensity-label {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .radio-visual:checked + .intensity-label {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        /* Login Animación */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-card-animation {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* Utilidades */
+        .hidden { display: none !important; }
+    </style>
+</head>
+
+<body class="p-2 sm:p-4 md:p-6 min-h-screen">
+
+    <!-- CONTENEDOR DE TOASTS -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2 pointer-events-none"></div>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 bg-[var(--background-color)] z-[200] flex items-center justify-center p-4">
+        <div class="login-card-animation bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-[var(--primary-color)]"></div>
+            
+            <div class="text-center mb-8 mt-4">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center text-[var(--primary-color)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">Bitácora Emocional</h1>
+                <p class="text-sm text-gray-500 mt-2">Un espacio para el autoconocimiento y la comunicación consciente.</p>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+                    <input type="text" id="auth-username" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white transition-colors" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                    <input type="password" id="auth-password" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:bg-white transition-colors" required>
+                </div>
+                <p id="auth-error" class="text-red-500 text-xs hidden font-medium"></p>
+                
+                <button type="submit" id="auth-submit-btn" class="w-full action-btn py-3 mt-4 flex justify-center items-center gap-2">
+                    <span>Ingresar</span>
+                </button>
+
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    <span id="auth-toggle-text">¿No tienes cuenta?</span> 
+                    <button type="button" id="toggle-auth-btn" class="text-[var(--primary-color)] font-bold hover:underline focus:outline-none">Crear cuenta</button>
+                </div>
+            </form>
+            
+            <div class="mt-6 text-center text-xs text-gray-400">
+                La información registrada aquí es privada. <br>Solo se compartirá lo que tú decidas explícitamente.
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div id="app-container" class="mx-auto max-w-5xl hidden">
+        <!-- HEADER -->
+        <header class="bg-white p-4 shadow-sm rounded-xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-[var(--primary-color)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-800 leading-tight">Bitácora Emocional</h1>
+                    <p id="user-greeting" class="text-xs text-gray-500">Hola, Usuario</p>
+                </div>
+            </div>
+
+            <nav class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+                <button onclick="navigate('dashboard')" id="nav-dashboard" class="text-sm font-medium px-4 py-2 rounded-lg bg-gray-100 text-[var(--primary-color)] transition-colors whitespace-nowrap">Dashboard</button>
+                <button onclick="navigate('my-logs')" id="nav-my-logs" class="text-sm font-medium px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Mis Registros</button>
+                <button onclick="navigate('shared-logs')" id="nav-shared-logs" class="text-sm font-medium px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap">Espacio Compartido</button>
+                <button onclick="logout()" class="text-sm font-medium px-4 py-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors whitespace-nowrap border border-transparent hover:border-red-100">Salir</button>
+            </nav>
+        </header>
+
+        <!-- VISTAS -->
+        <main>
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="space-y-6">
+                <!-- AVISO ANCLAJE PSICOLÓGICO (Movido aquí para que solo se vea en el Dashboard) -->
+                <div class="bg-blue-50 border-l-4 border-[var(--primary-color)] p-4 rounded-r-lg shadow-sm">
+                    <p class="text-sm text-blue-800 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                        Este espacio es para entender tus patrones emocionales, no para acumular reproches. La honestidad contigo mismo/a es la clave.
+                    </p>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">Tus Patrones de Reflexión</h2>
+                    <button onclick="generateWeeklySummary()" class="secondary-btn px-4 py-2 text-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        Resumen Semanal
+                    </button>
+                </div>
+
+                <!-- Métricas Rápidas -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="card p-4 text-center">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Registros Totales</p>
+                        <p id="stat-total" class="text-3xl font-bold text-[var(--primary-color)]">0</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Intensidad Promedio</p>
+                        <p id="stat-intensity" class="text-3xl font-bold text-[var(--secondary-color)]">0.0<span class="text-sm text-gray-400 font-normal">/5</span></p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Regulación Consciente</p>
+                        <p id="stat-regulation" class="text-3xl font-bold text-green-600">0%</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Alta Intensidad (4-5)</p>
+                        <p id="stat-high-intensity" class="text-3xl font-bold text-orange-500">0%</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Frecuencias -->
+                    <div class="card p-6">
+                        <h3 class="text-sm font-bold text-gray-700 uppercase mb-4 border-b pb-2">Emociones más frecuentes</h3>
+                        <div id="chart-emotions" class="space-y-3">
+                            <p class="text-sm text-gray-400 italic">No hay datos suficientes.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <h3 class="text-sm font-bold text-gray-700 uppercase mb-4 border-b pb-2">Necesidades subyacentes</h3>
+                        <div id="chart-needs" class="space-y-3">
+                            <p class="text-sm text-gray-400 italic">No hay datos suficientes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MIS REGISTROS -->
+            <div id="view-my-logs" class="hidden space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Mi Historial Personal</h2>
+                    <button onclick="openLogForm()" class="action-btn px-5 py-2 flex items-center gap-2">
+                        <span>+ Nuevo Registro</span>
+                    </button>
+                </div>
+                
+                <div id="my-logs-container" class="space-y-4">
+                    <!-- Renderizado de logs privados -->
+                </div>
+            </div>
+
+            <!-- ESPACIO COMPARTIDO -->
+            <div id="view-shared-logs" class="hidden space-y-4">
+                <div class="mb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Espacio de Pareja</h2>
+                    <p class="text-sm text-gray-500">Registros que ambos han decidido compartir para abrir el diálogo.</p>
+                </div>
+                
+                <div id="shared-logs-container" class="space-y-4">
+                    <!-- Renderizado de logs compartidos -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- FORMULARIO DE REGISTRO (FULL PANEL)        -->
+    <!-- ========================================== -->
+    <div id="log-form-panel" class="full-panel">
+        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-10">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-2xl font-bold text-[var(--primary-color)]">Reflexión sobre una situación</h2>
+                <button onclick="closeFullPanel('log-form-panel')" class="text-gray-400 hover:text-gray-600 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <form id="emotion-log-form" class="space-y-8">
+                <input type="hidden" id="log-id">
+                
+                <!-- 1. Contexto y Hechos -->
+                <section class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-800 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">1</span> 
+                        La Situación
+                    </h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contexto breve</label>
+                        <input type="text" id="log-context" placeholder="Ej: Cena del viernes, Organizando la semana..." class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hechos objetivos</label>
+                        <p class="text-xs text-gray-500 mb-2">Describe solo lo que grabaría una cámara, sin adjetivos ni juicios.</p>
+                        <textarea id="log-facts" rows="2" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Ej: Me dijo que llegaría a las 20h y llegó a las 21h sin avisar." required></textarea>
+                    </div>
+                </section>
+
+                <!-- 2. Mundo Interno -->
+                <section class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-800 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">2</span> 
+                        Tu Mundo Interno
+                    </h3>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Interpretación personal</label>
+                        <p class="text-xs text-gray-500 mb-2">¿Qué significado le diste en tu mente a lo que ocurrió?</p>
+                        <textarea id="log-interpretation" rows="2" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Ej: Pensé que mi tiempo no le importa y que no respeta nuestros acuerdos." required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Emociones sentidas (puedes elegir varias)</label>
+                        <div class="flex flex-wrap" id="emotions-container">
+                            <!-- JS genera checkboxes -->
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Intensidad emocional</label>
+                        <div class="flex gap-4 items-center">
+                            <span class="text-xs text-gray-500">Leve</span>
+                            <div class="flex gap-2">
+                                <input type="radio" name="intensity" id="int-1" value="1" class="radio-visual" required>
+                                <label for="int-1" class="intensity-label bg-gray-50">1</label>
+                                
+                                <input type="radio" name="intensity" id="int-2" value="2" class="radio-visual">
+                                <label for="int-2" class="intensity-label bg-gray-50">2</label>
+                                
+                                <input type="radio" name="intensity" id="int-3" value="3" class="radio-visual">
+                                <label for="int-3" class="intensity-label bg-gray-50">3</label>
+                                
+                                <input type="radio" name="intensity" id="int-4" value="4" class="radio-visual">
+                                <label for="int-4" class="intensity-label bg-gray-50">4</label>
+                                
+                                <input type="radio" name="intensity" id="int-5" value="5" class="radio-visual">
+                                <label for="int-5" class="intensity-label bg-gray-50">5</label>
+                            </div>
+                            <span class="text-xs text-gray-500">Intensa</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Necesidades que sentiste vulneradas o activadas</label>
+                        <div class="flex flex-wrap" id="needs-container">
+                            <!-- JS genera checkboxes -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Evaluación y Reacción -->
+                <section class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-800 w-6 h-6 rounded-full inline-flex items-center justify-center text-sm">3</span> 
+                        Respuesta y Reflexión
+                    </h3>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">¿Cómo manejaste tu reacción?</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="radio" name="regulation" id="reg-bien" value="Regulé bien mi emoción" class="radio-visual" required>
+                            <label for="reg-bien" class="radio-visual-label text-sm">Regulé bien mi emoción</label>
+
+                            <input type="radio" name="regulation" id="reg-costo" value="Me costó regularla" class="radio-visual">
+                            <label for="reg-costo" class="radio-visual-label text-sm">Me costó regularla</label>
+
+                            <input type="radio" name="regulation" id="reg-impulso" value="Reaccioné impulsivamente" class="radio-visual">
+                            <label for="reg-impulso" class="radio-visual-label text-sm">Reaccioné impulsivamente</label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">¿Lo comunicaste en el momento o después?</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="radio" name="communication" id="com-tran" value="Sí, de forma tranquila" class="radio-visual" required>
+                            <label for="com-tran" class="radio-visual-label text-sm">Sí, de forma tranquila</label>
+
+                            <input type="radio" name="communication" id="com-alt" value="Sí, pero me alteré" class="radio-visual">
+                            <label for="com-alt" class="radio-visual-label text-sm">Sí, pero me alteré</label>
+
+                            <input type="radio" name="communication" id="com-no" value="No lo comuniqué" class="radio-visual">
+                            <label for="com-no" class="radio-visual-label text-sm">No lo comuniqué</label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Autoevaluación del origen</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="radio" name="origin" id="ori-mio" value="Creo que es algo mío para trabajar" class="radio-visual" required>
+                            <label for="ori-mio" class="radio-visual-label text-sm">Algo mío para trabajar</label>
+
+                            <input type="radio" name="origin" id="ori-conv" value="Creo que es algo que necesitamos conversar" class="radio-visual">
+                            <label for="ori-conv" class="radio-visual-label text-sm">Algo para conversar</label>
+
+                            <input type="radio" name="origin" id="ori-duda" value="No estoy seguro/a" class="radio-visual">
+                            <label for="ori-duda" class="radio-visual-label text-sm">No estoy seguro/a</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. Visibilidad -->
+                <section class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Visibilidad del Registro</h3>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="visibility" value="Privado" class="w-4 h-4 text-[var(--primary-color)]" checked>
+                            <span class="text-sm text-gray-700">Mantener en privado (Solo para mí)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="visibility" value="Compartido" class="w-4 h-4 text-[var(--primary-color)]">
+                            <span class="text-sm text-gray-700">Compartir en el espacio común</span>
+                        </label>
+                    </div>
+                </section>
+
+                <div class="pt-4 flex justify-end gap-3 border-t">
+                    <button type="button" onclick="closeFullPanel('log-form-panel')" class="secondary-btn px-6 py-3">Cancelar</button>
+                    <button type="submit" class="action-btn px-8 py-3">Guardar Reflexión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE LECTURA DE REGISTRO -->
+    <div id="log-detail-modal" class="modal-overlay">
+        <div class="modal-content max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 id="detail-context" class="text-2xl font-bold text-gray-800">Contexto</h3>
+                    <p id="detail-date" class="text-sm text-gray-500">Fecha</p>
+                </div>
+                <button onclick="closeModal('log-detail-modal')" class="text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-2">✕</button>
+            </div>
+            
+            <div id="detail-author-badge" class="hidden mb-4">
+                <span class="inline-flex items-center gap-1 bg-blue-50 text-[var(--primary-color)] px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                    <span id="detail-author-name">Nombre</span>
+                </span>
+            </div>
+
+            <div class="space-y-5">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Hechos Objetivos</h4>
+                    <p id="detail-facts" class="text-gray-700"></p>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Interpretación</h4>
+                    <p id="detail-interpretation" class="text-gray-700"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Emociones</h4>
+                        <div id="detail-emotions" class="flex flex-wrap gap-1"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Necesidades</h4>
+                        <div id="detail-needs" class="flex flex-wrap gap-1"></div>
+                    </div>
+                </div>
+
+                <div class="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Intensidad</p>
+                        <p id="detail-intensity" class="font-bold text-gray-800"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Regulación</p>
+                        <p id="detail-regulation" class="font-bold text-gray-800"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Comunicación</p>
+                        <p id="detail-communication" class="font-bold text-gray-800"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">Evaluación de Origen</p>
+                        <p id="detail-origin" class="font-bold text-gray-800"></p>
+                    </div>
+                </div>
+                
+                <div id="detail-actions" class="pt-4 flex justify-end gap-2 border-t mt-4 hidden">
+                    <button onclick="editCurrentLog()" class="secondary-btn px-4 py-2 text-sm">Editar</button>
+                    <button onclick="deleteCurrentLog()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE RESUMEN SEMANAL -->
+    <div id="summary-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-[var(--primary-color)] mb-4">Resumen de los últimos 7 días</h3>
+            <!-- El id="summary-content" ahora tendrá formato HTML y fondo blanco para una impresión limpia en PDF -->
+            <div id="summary-content" class="space-y-4 text-gray-700 bg-white p-6 rounded-lg border border-gray-200 text-sm leading-relaxed">
+                Generando resumen...
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="downloadPDF()" class="secondary-btn px-4 py-2 text-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    Descargar PDF
+                </button>
+                <button onclick="closeModal('summary-modal')" class="action-btn px-4 py-2 text-sm">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // CONFIGURACIÓN E INICIALIZACIÓN
+        // ==========================================
+        const appId = 'bitacora-emocional'; 
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0aKRs7plJB5Kbz6x1YmFrlJpk6Wz4zpI",
+            authDomain: "bitacora-emocional-1d9ab.firebaseapp.com",
+            projectId: "bitacora-emocional-1d9ab",
+            storageBucket: "bitacora-emocional-1d9ab.firebasestorage.app",
+            messagingSenderId: "547688088438",
+            appId: "1:547688088438:web:b13ad3fe6206bb7e28b057"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ESTADO GLOBAL
+        let currentUser = null;
+        let activeUserId = sessionStorage.getItem('be_userid') || null;
+        let activeUserName = sessionStorage.getItem('be_username') || null;
+        let privateLogs = [];
+        let sharedLogs = [];
+        let appUsers = [];
+        let selectedLogIdForDetail = null;
+        let isLoginMode = true;
+
+        const EMOTIONS_LIST = ['Frustración', 'Enojo', 'Ansiedad', 'Desilusión', 'Vergüenza', 'Tristeza', 'Desvalorización', 'Miedo', 'Inseguridad', 'Agotamiento'];
+        const NEEDS_LIST = ['Orden', 'Anticipación', 'Eficiencia', 'Respeto', 'Validación', 'Autonomía', 'Seguridad', 'Organización', 'Comprensión', 'Apoyo'];
+
+        // ==========================================
+        // UTILIDADES Y UI
+        // ==========================================
+        const showToast = (message, type = 'info') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-500' : 'bg-blue-600';
+            toast.className = `${bg} text-white px-4 py-3 rounded-lg shadow-lg text-sm transition-all duration-300 opacity-0 transform translate-y-2 flex items-center gap-2`;
+            toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> ${message}`;
+            
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-2'); toast.classList.add('opacity-100', 'translate-y-0'); }, 10);
+            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+
+        window.navigate = (viewId) => {
+            document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('nav button').forEach(btn => {
+                if(btn.id !== 'nav-logout') {
+                    btn.classList.remove('bg-gray-100', 'text-[var(--primary-color)]');
+                    btn.classList.add('text-gray-500');
+                }
+            });
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-500');
+                activeBtn.classList.add('bg-gray-100', 'text-[var(--primary-color)]');
+            }
+        };
+
+        window.openFullPanel = (id) => document.getElementById(id).classList.add('active');
+        window.closeFullPanel = (id) => document.getElementById(id).classList.remove('active');
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+
+        // Renderizar opciones múltiples
+        const renderCheckboxes = (containerId, items, name) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = items.map(item => `
+                <div>
+                    <input type="checkbox" id="${name}-${item}" value="${item}" name="${name}" class="tag-checkbox">
+                    <label for="${name}-${item}" class="tag-label">${item}</label>
+                </div>
+            `).join('');
+        };
+
+        // ==========================================
+        // AUTENTICACIÓN Y GESTIÓN DE USUARIOS
+        // ==========================================
+        const toggleAuthBtn = document.getElementById('toggle-auth-btn');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authError = document.getElementById('auth-error');
+
+        toggleAuthBtn.onclick = () => {
+            isLoginMode = !isLoginMode;
+            authError.classList.add('hidden');
+            
+            if (isLoginMode) {
+                authSubmitBtn.innerHTML = '<span>Ingresar</span>';
+                authToggleText.textContent = '¿No tienes cuenta?';
+                toggleAuthBtn.textContent = 'Crear cuenta';
+            } else {
+                authSubmitBtn.innerHTML = '<span>Registrar y Entrar</span>';
+                authToggleText.textContent = '¿Ya tienes cuenta?';
+                toggleAuthBtn.textContent = 'Iniciar Sesión';
+            }
+        };
+
+        const finishLogin = () => {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('user-greeting').textContent = `Hola, ${activeUserName}`;
+            setupPrivateListeners();
+            navigate('dashboard');
+            showToast(`Bienvenido/a, ${activeUserName}`, 'success');
+        };
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authError.classList.add('hidden');
+            const un = document.getElementById('auth-username').value.trim();
+            const pw = document.getElementById('auth-password').value.trim();
+            if(!un || !pw) return;
+
+            if (isLoginMode) {
+                // Iniciar sesión
+                const user = appUsers.find(u => u.username === un && u.password === pw);
+                if (user) {
+                    activeUserId = user.uid;
+                    activeUserName = user.username;
+                    sessionStorage.setItem('be_userid', activeUserId);
+                    sessionStorage.setItem('be_username', activeUserName);
+                    finishLogin();
+                } else {
+                    authError.textContent = "Usuario o contraseña incorrectos";
+                    authError.classList.remove('hidden');
+                }
+            } else {
+                // Registrar
+                if (appUsers.find(u => u.username === un)) {
+                    authError.textContent = "El usuario ya existe. Intenta con otro o inicia sesión.";
+                    authError.classList.remove('hidden');
+                } else {
+                    try {
+                        const newUid = crypto.randomUUID(); // Identificador interno para sus datos privados
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'app_users'), {
+                            username: un,
+                            password: pw,
+                            uid: newUid
+                        });
+                        activeUserId = newUid;
+                        activeUserName = un;
+                        sessionStorage.setItem('be_userid', activeUserId);
+                        sessionStorage.setItem('be_username', activeUserName);
+                        finishLogin();
+                    } catch (err) {
+                        authError.textContent = "Error al registrar el usuario.";
+                        authError.classList.remove('hidden');
+                    }
+                }
+            }
+        });
+
+        window.logout = () => {
+            sessionStorage.removeItem('be_userid');
+            sessionStorage.removeItem('be_username');
+            window.location.reload();
+        };
+
+        const initAuthFlow = async () => {
+            if(!auth) return;
+            
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Error al iniciar sesión anónima en Firebase:", error);
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    setupPublicListeners();
+                }
+            });
+        };
+
+        // ==========================================
+        // BASE DE DATOS Y LISTENERS
+        // ==========================================
+        const setupPublicListeners = () => {
+            if (!currentUser || !db) return;
+
+            // Usuarios de la aplicación (para Auth simulado)
+            const usersPath = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
+            onSnapshot(usersPath, (snapshot) => {
+                appUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Si la sesión ya estaba activa en el navegador, entramos directamente
+                if(activeUserId && activeUserName && document.getElementById('app-container').classList.contains('hidden')) {
+                    finishLogin();
+                }
+            }, (error) => console.error("Error users:", error));
+
+            // Colección Pública (Compartida)
+            const publicPath = collection(db, 'artifacts', appId, 'public', 'data', 'shared_emotions');
+            onSnapshot(publicPath, (snapshot) => {
+                sharedLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                sharedLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                renderSharedLogs();
+            }, (error) => console.error("Error public:", error));
+        };
+
+        const setupPrivateListeners = () => {
+            if (!activeUserId || !db) return;
+
+            // Colección Privada (aislada por activeUserId generado al registrarse)
+            const privatePath = collection(db, 'artifacts', appId, 'users', activeUserId, 'emotions');
+            onSnapshot(privatePath, (snapshot) => {
+                privateLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                privateLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                updateDashboard();
+                renderMyLogs();
+            }, (error) => console.error("Error private:", error));
+        };
+
+        // ==========================================
+        // LÓGICA DE NEGOCIO (CRUD)
+        // ==========================================
+        window.openLogForm = () => {
+            document.getElementById('emotion-log-form').reset();
+            document.getElementById('log-id').value = '';
+            // Reset custom visual tags
+            document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+            openFullPanel('log-form-panel');
+        };
+
+        document.getElementById('emotion-log-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser || !db) return showToast("Error de conexión", "error");
+
+            const form = e.target;
+            const id = document.getElementById('log-id').value || crypto.randomUUID();
+            
+            // Recolectar datos
+            const getCheckedValues = (name) => Array.from(form.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
+            
+            const logData = {
+                date: document.getElementById('log-id').value ? privateLogs.find(l => l.id === id).date : new Date().toISOString(),
+                context: document.getElementById('log-context').value.trim(),
+                facts: document.getElementById('log-facts').value.trim(),
+                interpretation: document.getElementById('log-interpretation').value.trim(),
+                emotions: getCheckedValues('emotions'),
+                needs: getCheckedValues('needs'),
+                intensity: parseInt(form.elements['intensity'].value, 10),
+                regulation: form.elements['regulation'].value,
+                communication: form.elements['communication'].value,
+                origin: form.elements['origin'].value,
+                visibility: form.elements['visibility'].value,
+                authorId: activeUserId,
+                authorName: activeUserName
+            };
+
+            if(logData.emotions.length === 0) return showToast("Selecciona al menos una emoción", "error");
+            if(logData.needs.length === 0) return showToast("Selecciona al menos una necesidad", "error");
+
+            try {
+                // 1. Guardar en privado
+                await setDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'emotions', id), logData);
+                
+                // 2. Sincronizar con público si corresponde
+                const publicDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'shared_emotions', id);
+                if (logData.visibility === 'Compartido') {
+                    await setDoc(publicDocRef, logData);
+                } else {
+                    // Intentar borrar del público por si antes era compartido
+                    await deleteDoc(publicDocRef).catch(()=>null);
+                }
+
+                closeFullPanel('log-form-panel');
+                showToast("Reflexión guardada correctamente", "success");
+            } catch (error) {
+                console.error(error);
+                showToast("Error al guardar", "error");
+            }
+        });
+
+        // ==========================================
+        // DASHBOARD Y MÉTRICAS
+        // ==========================================
+        const updateDashboard = () => {
+            const total = privateLogs.length;
+            document.getElementById('stat-total').textContent = total;
+            
+            if (total === 0) return;
+
+            // Promedios y porcentajes
+            const sumIntensity = privateLogs.reduce((acc, log) => acc + log.intensity, 0);
+            document.getElementById('stat-intensity').innerHTML = `${(sumIntensity / total).toFixed(1)}<span class="text-sm text-gray-400 font-normal">/5</span>`;
+
+            const highIntCount = privateLogs.filter(l => l.intensity >= 4).length;
+            document.getElementById('stat-high-intensity').textContent = `${Math.round((highIntCount / total) * 100)}%`;
+
+            const wellRegCount = privateLogs.filter(l => l.regulation === 'Regulé bien mi emoción').length;
+            document.getElementById('stat-regulation').textContent = `${Math.round((wellRegCount / total) * 100)}%`;
+
+            // Frecuencias (Moda)
+            const countFrequencies = (arraySelector) => {
+                const counts = {};
+                privateLogs.forEach(log => {
+                    log[arraySelector].forEach(item => { counts[item] = (counts[item] || 0) + 1; });
+                });
+                return Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5); // top 5
+            };
+
+            const renderBar = (item, count, totalItems) => {
+                const percent = Math.round((count / total) * 100);
+                return `
+                    <div class="flex flex-col gap-1 mb-2">
+                        <div class="flex justify-between text-xs font-medium text-gray-600">
+                            <span>${item}</span>
+                            <span>${percent}%</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2">
+                            <div class="bg-[var(--primary-color)] h-2 rounded-full opacity-80" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const topEmotions = countFrequencies('emotions');
+            document.getElementById('chart-emotions').innerHTML = topEmotions.map(e => renderBar(e[0], e[1])).join('');
+
+            const topNeeds = countFrequencies('needs');
+            document.getElementById('chart-needs').innerHTML = topNeeds.map(n => renderBar(n[0], n[1])).join('');
+        };
+
+        window.generateWeeklySummary = () => {
+            const now = new Date();
+            const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            const weeklyLogs = privateLogs.filter(l => new Date(l.date) >= lastWeek);
+            
+            let html = `<div style="font-family: 'Inter', sans-serif; color: #334155;">`;
+            html += `<h2 style="color: #1E3A8A; font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">Resumen Reflexivo (Últimos 7 días)</h2>`;
+            
+            if(weeklyLogs.length === 0) {
+                html += `<p>No has registrado reflexiones en la última semana.</p>`;
+            } else {
+                html += `<ul style="list-style-type: none; padding: 0; margin: 0;">`;
+                html += `<li style="margin-bottom: 0.5rem;">📝 <strong style="color: #1E3A8A;">Total de situaciones analizadas:</strong> ${weeklyLogs.length}</li>`;
+                
+                const avgInt = (weeklyLogs.reduce((sum, l) => sum + l.intensity, 0) / weeklyLogs.length).toFixed(1);
+                html += `<li style="margin-bottom: 0.5rem;">📊 <strong style="color: #1E3A8A;">Intensidad emocional promedio:</strong> ${avgInt}/5</li>`;
+                
+                const wellReg = weeklyLogs.filter(l => l.regulation === 'Regulé bien mi emoción').length;
+                html += `<li style="margin-bottom: 1rem;">🧘 <strong style="color: #1E3A8A;">Regulación consciente:</strong> Lo lograste en el ${Math.round((wellReg/weeklyLogs.length)*100)}% de los casos.</li>`;
+                
+                // Emoción principal
+                const ems = {}; weeklyLogs.forEach(l => l.emotions.forEach(e => ems[e] = (ems[e]||0)+1));
+                const topEm = Object.entries(ems).sort((a,b)=>b[1]-a[1])[0];
+                if(topEm) html += `<li style="margin-bottom: 0.5rem; background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem;">💡 <strong style="color: #D4AF37;">Emoción más presente:</strong> ${topEm[0]}</li>`;
+                
+                const needs = {}; weeklyLogs.forEach(l => l.needs.forEach(n => needs[n] = (needs[n]||0)+1));
+                const topNeed = Object.entries(needs).sort((a,b)=>b[1]-a[1])[0];
+                if(topNeed) html += `<li style="margin-bottom: 0.5rem; background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem;">🌱 <strong style="color: #D4AF37;">Necesidad más frecuente:</strong> ${topNeed[0]}</li>`;
+                
+                html += `</ul>`;
+                html += `<p style="margin-top: 1.5rem; font-size: 0.875rem; color: #64748b; font-style: italic;">Nota: Este registro es para tu autoconocimiento. Reconocer tus patrones es el primer paso para transformarlos.</p>`;
+            }
+            html += `</div>`;
+            
+            document.getElementById('summary-content').innerHTML = html;
+            openModal('summary-modal');
+        };
+
+        window.downloadPDF = () => {
+            const element = document.getElementById('summary-content');
+            const opt = {
+              margin:       15,
+              filename:     'Bitacora_Resumen_Semanal.pdf',
+              image:        { type: 'jpeg', quality: 0.98 },
+              html2canvas:  { scale: 2, useCORS: true },
+              jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast("Descarga iniciada", "success");
+            }).catch(err => {
+                showToast("Error al generar PDF", "error");
+            });
+        };
+
+        // ==========================================
+        // RENDERIZADO DE LISTAS
+        // ==========================================
+        const createLogCard = (log, isSharedView = false) => {
+            const dateObj = new Date(log.date);
+            const dateStr = dateObj.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: 'short' });
+            
+            let regColor = log.regulation === 'Regulé bien mi emoción' ? 'text-green-600 bg-green-50' : 
+                           log.regulation === 'Me costó regularla' ? 'text-orange-600 bg-orange-50' : 'text-red-600 bg-red-50';
+            
+            const intensityDots = Array(5).fill(0).map((_, i) => 
+                `<span class="w-2 h-2 rounded-full ${i < log.intensity ? 'bg-[var(--secondary-color)]' : 'bg-gray-200'}"></span>`
+            ).join('');
+
+            return `
+                <div onclick="openLogDetail('${log.id}', ${isSharedView})" class="card p-4 cursor-pointer hover:-translate-y-1 hover:shadow-md transition-all">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">${dateStr}</span>
+                            <h3 class="text-lg font-semibold text-gray-800 line-clamp-1">${log.context}</h3>
+                        </div>
+                        <div class="flex gap-1 items-center" title="Intensidad: ${log.intensity}/5">
+                            ${intensityDots}
+                        </div>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 line-clamp-2 mb-3">${log.facts}</p>
+                    
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-t pt-3 mt-auto">
+                        <div class="flex gap-2">
+                            ${log.emotions.slice(0,2).map(e => `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md border border-gray-200">${e}</span>`).join('')}
+                            ${log.emotions.length > 2 ? `<span class="text-xs text-gray-400">+${log.emotions.length-2}</span>` : ''}
+                        </div>
+                        
+                        ${isSharedView ? 
+                            `<span class="text-xs font-medium px-2 py-1 rounded-md bg-blue-50 text-[var(--primary-color)]">👤 ${log.authorName}</span>` : 
+                            `<span class="text-xs font-medium px-2 py-1 rounded-md ${regColor}">${log.regulation.split(' ')[0]}</span>`
+                        }
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderMyLogs = () => {
+            const container = document.getElementById('my-logs-container');
+            if(privateLogs.length === 0) {
+                container.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">Aún no tienes registros.</p><p class="text-sm text-gray-400 mt-1">Comienza tu bitácora agregando una nueva reflexión.</p></div>`;
+                return;
+            }
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">` + privateLogs.map(l => createLogCard(l, false)).join('') + `</div>`;
+        };
+
+        const renderSharedLogs = () => {
+            const container = document.getElementById('shared-logs-container');
+            if(sharedLogs.length === 0) {
+                container.innerHTML = `<div class="text-center p-8 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">No hay registros compartidos.</p><p class="text-sm text-gray-400 mt-1">Los registros que marquen como "Compartidos" aparecerán aquí.</p></div>`;
+                return;
+            }
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">` + sharedLogs.map(l => createLogCard(l, true)).join('') + `</div>`;
+        };
+
+        // ==========================================
+        // DETALLE DE REGISTRO
+        // ==========================================
+        window.openLogDetail = (id, isSharedView) => {
+            const log = isSharedView ? sharedLogs.find(l => l.id === id) : privateLogs.find(l => l.id === id);
+            if(!log) return;
+            
+            selectedLogIdForDetail = log.id;
+
+            document.getElementById('detail-context').textContent = log.context;
+            document.getElementById('detail-date').textContent = new Date(log.date).toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' });
+            
+            document.getElementById('detail-facts').textContent = log.facts;
+            document.getElementById('detail-interpretation').textContent = log.interpretation;
+            
+            document.getElementById('detail-emotions').innerHTML = log.emotions.map(e => `<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-medium">${e}</span>`).join('');
+            document.getElementById('detail-needs').innerHTML = log.needs.map(n => `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded text-xs font-medium">${n}</span>`).join('');
+            
+            document.getElementById('detail-intensity').textContent = `${log.intensity} / 5`;
+            document.getElementById('detail-regulation').textContent = log.regulation;
+            document.getElementById('detail-communication').textContent = log.communication;
+            document.getElementById('detail-origin').textContent = log.origin;
+
+            const badge = document.getElementById('detail-author-badge');
+            if(isSharedView) {
+                badge.classList.remove('hidden');
+                document.getElementById('detail-author-name').textContent = log.authorName;
+                document.getElementById('detail-actions').classList.add('hidden');
+            } else {
+                badge.classList.add('hidden');
+                document.getElementById('detail-actions').classList.remove('hidden');
+            }
+
+            openModal('log-detail-modal');
+        };
+
+        window.editCurrentLog = () => {
+            const log = privateLogs.find(l => l.id === selectedLogIdForDetail);
+            if(!log) return;
+            
+            closeModal('log-detail-modal');
+            openLogForm();
+            
+            const form = document.getElementById('emotion-log-form');
+            document.getElementById('log-id').value = log.id;
+            document.getElementById('log-context').value = log.context;
+            document.getElementById('log-facts').value = log.facts;
+            document.getElementById('log-interpretation').value = log.interpretation;
+            
+            log.emotions.forEach(e => {
+                const cb = document.getElementById(`emotions-${e}`);
+                if(cb) cb.checked = true;
+            });
+            log.needs.forEach(n => {
+                const cb = document.getElementById(`needs-${n}`);
+                if(cb) cb.checked = true;
+            });
+            
+            form.elements['intensity'].value = log.intensity;
+            form.elements['regulation'].value = log.regulation;
+            form.elements['communication'].value = log.communication;
+            form.elements['origin'].value = log.origin;
+            form.elements['visibility'].value = log.visibility;
+        };
+
+        window.deleteCurrentLog = async () => {
+            if(!confirm("¿Eliminar esta reflexión de forma permanente?")) return;
+            
+            const id = selectedLogIdForDetail;
+            try {
+                // Borrar privado
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'emotions', id));
+                // Borrar público
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'shared_emotions', id)).catch(()=>null);
+                
+                closeModal('log-detail-modal');
+                showToast("Reflexión eliminada", "success");
+            } catch (e) {
+                showToast("Error al eliminar", "error");
+            }
+        };
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCheckboxes('emotions-container', EMOTIONS_LIST, 'emotions');
+            renderCheckboxes('needs-container', NEEDS_LIST, 'needs');
+            initAuthFlow();
+        });
+
+    </script>
+</body>
+</html>
