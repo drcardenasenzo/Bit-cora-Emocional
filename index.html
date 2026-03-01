@@ -841,7 +841,8 @@
         </div>
     </div>
 
-    <div id="hidden-pdf-container" style="display:none; padding: 20px; background: white;"></div>
+    <!-- Contenedor oculto simplificado para que no se rompa el PDF en celulares -->
+    <div id="hidden-pdf-container" style="display:none; padding: 20px; background: white; color: black; text-align: left;"></div>
 
     <!-- MODAL INFO JARDÍN -->
     <div id="garden-info-modal" class="modal-overlay z-modal-base">
@@ -1024,7 +1025,7 @@
             setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         };
 
-        // Sustitutos Nativos (Confirm y Prompt)
+        // Sustitutos Nativos (Confirm y Prompt) AISLADOS DEL HISTORIAL
         window.customConfirm = (title, message, okText = 'Confirmar', isDestructive = false) => {
             return new Promise((resolve) => {
                 document.getElementById('confirm-title').textContent = title;
@@ -1040,10 +1041,11 @@
                     okBtn.classList.add('bg-[var(--primary-color)]', 'hover:bg-[#1e3a8aed]');
                 }
 
-                openModal('custom-confirm-modal');
+                // Usamos manipulación directa de clase en lugar de openModal() para no crear entradas falsas en el botón 'Atrás'
+                document.getElementById('custom-confirm-modal').classList.add('active');
 
-                okBtn.onclick = () => { closeModal('custom-confirm-modal'); resolve(true); };
-                document.getElementById('confirm-cancel-btn').onclick = () => { closeModal('custom-confirm-modal'); resolve(false); };
+                okBtn.onclick = () => { document.getElementById('custom-confirm-modal').classList.remove('active'); resolve(true); };
+                document.getElementById('confirm-cancel-btn').onclick = () => { document.getElementById('custom-confirm-modal').classList.remove('active'); resolve(false); };
             });
         };
 
@@ -1055,11 +1057,12 @@
                 input.value = '';
                 input.placeholder = placeholder;
                 
-                openModal('custom-prompt-modal');
+                // Usamos manipulación directa de clase para no ensuciar el historial
+                document.getElementById('custom-prompt-modal').classList.add('active');
                 input.focus();
 
-                document.getElementById('prompt-ok-btn').onclick = () => { closeModal('custom-prompt-modal'); resolve(input.value); };
-                document.getElementById('prompt-cancel-btn').onclick = () => { closeModal('custom-prompt-modal'); resolve(null); };
+                document.getElementById('prompt-ok-btn').onclick = () => { document.getElementById('custom-prompt-modal').classList.remove('active'); resolve(input.value); };
+                document.getElementById('prompt-cancel-btn').onclick = () => { document.getElementById('custom-prompt-modal').classList.remove('active'); resolve(null); };
             });
         };
 
@@ -1628,12 +1631,15 @@
                 return;
             }
 
-            let promptText = "Actúa como un psicólogo clínico experto en terapia de pareja y comunicación no violenta. A continuación te presento un registro de situaciones de conflicto anotadas por uno o ambos miembros de la pareja. Tu objetivo no es buscar culpables ni juzgar, sino identificar: 1) Patrones repetitivos (triggers o desencadenantes), 2) Necesidades subyacentes no cubiertas, 3) Áreas de mejora en la regulación emocional individual. Sé objetivo, empático y sugiere dos ejercicios prácticos que podamos hacer para mejorar nuestra dinámica. Aquí están los datos estructurados:\n\n";
+            // 1. Textos iniciales
+            let promptText = "Actúa como un psicólogo clínico experto en terapia de pareja y comunicación no violenta. A continuación te presento un registro de situaciones de conflicto anotadas por uno o ambos miembros de la pareja. Al final encontrarás un resumen de patrones frecuentes. Tu objetivo es:\n1) Identificar cuál crees que es el problema de fondo o el patrón destructivo principal.\n2) Dar tu opinión profesional sobre la dinámica que estamos teniendo.\n3) Señalar las necesidades subyacentes no cubiertas de cada uno.\n4) Sugerir dos ejercicios prácticos que podamos hacer para mejorar nuestra relación y comunicación.\n\nSé objetivo y empático. Aquí están los datos:\n\n";
+            promptText += "--- REGISTRO DE SITUACIONES ---\n";
 
             let pdfHtml = `<div style="font-family: 'Helvetica', 'Arial', sans-serif; color: #333;">`;
             pdfHtml += `<h1 style="color: #1E3A8A; font-size: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 5px;">Análisis de Bitácora Emocional</h1>`;
             pdfHtml += `<p style="color: #666; font-size: 14px; margin-bottom: 20px;">Reporte generado con ${logsToProcess.length} registros estructurados para análisis terapéutico.</p>`;
 
+            // 2. Imprimir los Registros primero
             logsToProcess.forEach((log, i) => {
                 const d = new Date(log.eventDate ? log.eventDate + 'T12:00:00' : log.date).toLocaleDateString('es-AR');
                 const resolvedTag = log.isResolved ? ' [RESUELTO]' : '';
@@ -1650,8 +1656,9 @@
                 if (log.closingNote) promptText += `- Reencuadre posterior: ${log.closingNote}\n`;
                 promptText += `\n`;
 
-                pdfHtml += `<div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa; break-inside: avoid;">`;
-                pdfHtml += `<h3 style="margin: 0 0 10px 0; color: #1E3A8A; font-size: 16px;">${i+1}. ${log.context} <span style="color:#888; font-size:12px; font-weight:normal;">(${d}) - Analizado por: ${log.authorName}</span> ${log.isResolved ? '<span style="color:green; font-size:12px;">✅ Resuelto</span>' : ''}</h3>`;
+                // Agregamos page-break-inside: avoid para que no se corten a la mitad en el PDF
+                pdfHtml += `<div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa; page-break-inside: avoid;">`;
+                pdfHtml += `<h3 style="margin: 0 0 10px 0; color: #1E3A8A; font-size: 16px;">${i+1}. ${log.context} <span style="color:#888; font-size:12px; font-weight:normal;">(${d}) - Analizado por: ${log.authorName}</span> ${log.isResolved ? '<span style="color:green; font-size:12px; font-weight:bold; margin-left: 5px;">[Resuelto]</span>' : ''}</h3>`;
                 pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Hechos:</strong> ${log.facts}</p>`;
                 pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Interpretación:</strong> ${log.interpretation}</p>`;
                 pdfHtml += `<p style="margin: 4px 0; font-size:13px;"><strong>Emociones:</strong> ${log.emotions.join(', ')} <span style="color:#D4AF37; font-weight:bold;">(Intensidad: ${log.intensity}/5)</span></p>`;
@@ -1663,6 +1670,56 @@
                 pdfHtml += `</div>`;
             });
 
+            // 3. Cálculos de Estadísticas por usuario (Al final)
+            const userStats = {};
+            logsToProcess.forEach(log => {
+                const author = log.authorName || 'Desconocido';
+                if (!userStats[author]) {
+                    userStats[author] = { total: 0, emotions: {}, needs: {} };
+                }
+                userStats[author].total++;
+                (log.emotions || []).forEach(e => {
+                    userStats[author].emotions[e] = (userStats[author].emotions[e] || 0) + 1;
+                });
+                (log.needs || []).forEach(n => {
+                    userStats[author].needs[n] = (userStats[author].needs[n] || 0) + 1;
+                });
+            });
+
+            let statsText = "\n--- RESUMEN DE PATRONES POR USUARIO ---\n";
+            let statsHtml = `<div style="margin-top: 30px; padding: 15px; border: 2px solid #1E3A8A; border-radius: 8px; background-color: #f8fafc; color: #1e293b; page-break-inside: avoid;">
+                                <h2 style="color: #1E3A8A; font-size: 18px; margin-top: 0; margin-bottom: 15px;">Patrones Frecuentes del Periodo</h2>`;
+
+            for (const [author, stats] of Object.entries(userStats)) {
+                const total = stats.total;
+                
+                // Función para extraer el top 4 y calcular su porcentaje
+                const formatTopWithPercents = (obj) => {
+                    return Object.entries(obj)
+                        .sort((a,b) => b[1] - a[1])
+                        .slice(0, 4)
+                        .map(item => `${item[0]} (${Math.round((item[1] / total) * 100)}%)`)
+                        .join(', ') || 'N/A';
+                };
+                
+                const topEmotions = formatTopWithPercents(stats.emotions);
+                const topNeeds = formatTopWithPercents(stats.needs);
+                
+                statsText += `Usuario: ${author} (${total} registros evaluados)\n`;
+                statsText += `- Emociones principales: ${topEmotions}\n`;
+                statsText += `- Necesidades principales: ${topNeeds}\n\n`;
+
+                statsHtml += `<div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1;">
+                                <h4 style="margin: 0 0 6px 0; color: #1E3A8A; font-size: 15px;">Usuario: <strong>${author}</strong> <span style="color:#64748b; font-size:12px; font-weight:normal;">(${total} registros evaluados)</span></h4>
+                                <p style="margin: 3px 0; font-size: 13px;"><strong>Emociones más frecuentes:</strong> ${topEmotions}</p>
+                                <p style="margin: 3px 0; font-size: 13px;"><strong>Necesidades más frecuentes:</strong> ${topNeeds}</p>
+                              </div>`;
+            }
+            statsHtml += `</div>`;
+
+            // Unir todo
+            promptText += statsText;
+            pdfHtml += statsHtml;
             pdfHtml += `</div>`;
 
             currentReportText = promptText;
@@ -1687,20 +1744,24 @@
             showToast("Generando documento PDF...", "info");
 
             const opt = {
-                margin:       10,
+                margin:       15,
                 filename:     'Bitacora_Analisis_Clinico.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                // scrollY: 0 es lo que garantiza que SIEMPRE tome la foto desde la esquina superior
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            html2pdf().set(opt).from(container).save().then(() => {
-                container.style.display = 'none'; 
-                showToast("¡Descarga completada!", "success");
-            }).catch(err => {
-                container.style.display = 'none';
-                showToast("Error al generar PDF", "error");
-            });
+            // Le damos 100ms al navegador para dibujar el HTML oculto antes de la foto
+            setTimeout(() => {
+                html2pdf().set(opt).from(container).save().then(() => {
+                    container.style.display = 'none'; 
+                    showToast("¡Descarga completada!", "success");
+                }).catch(err => {
+                    container.style.display = 'none';
+                    showToast("Error al generar PDF", "error");
+                });
+            }, 100);
         };
 
         // ==========================================
@@ -1975,34 +2036,41 @@
         };
 
         window.editCurrentLog = () => {
-            const log = privateLogs.find(l => l.id === selectedLogIdForDetail);
+            // Solución: Buscar en ambas listas para evitar fallos si se edita desde el área compartida
+            let log = privateLogs.find(l => l.id === selectedLogIdForDetail);
+            if(!log) log = sharedLogs.find(l => l.id === selectedLogIdForDetail);
             if(!log) return;
             
-            closeModal('log-detail-modal');
+            // EL CAMBIO ESTÁ AQUÍ (añadir false para que no colapse el historial de navegación al abrir el form)
+            closeModal('log-detail-modal', false); 
             openLogForm();
             
             const form = document.getElementById('emotion-log-form');
             document.getElementById('log-id').value = log.id;
-            document.getElementById('log-context').value = log.context;
-            document.getElementById('log-event-date').value = log.eventDate || log.date.split('T')[0];
-            document.getElementById('log-facts').value = log.facts;
-            document.getElementById('log-interpretation').value = log.interpretation;
+            document.getElementById('log-context').value = log.context || '';
+            document.getElementById('log-event-date').value = log.eventDate || (log.date ? log.date.split('T')[0] : '');
+            document.getElementById('log-facts').value = log.facts || '';
+            document.getElementById('log-interpretation').value = log.interpretation || '';
             document.getElementById('log-closing-note').value = log.closingNote || '';
             
-            log.emotions.forEach(e => {
-                const cb = document.getElementById(`emotions-${e}`);
-                if(cb) cb.checked = true;
-            });
-            log.needs.forEach(n => {
-                const cb = document.getElementById(`needs-${n}`);
-                if(cb) cb.checked = true;
-            });
+            if(log.emotions) {
+                log.emotions.forEach(e => {
+                    const cb = document.getElementById(`emotions-${e}`);
+                    if(cb) cb.checked = true;
+                });
+            }
+            if(log.needs) {
+                log.needs.forEach(n => {
+                    const cb = document.getElementById(`needs-${n}`);
+                    if(cb) cb.checked = true;
+                });
+            }
             
-            form.elements['intensity'].value = log.intensity;
-            form.elements['regulation'].value = log.regulation;
-            form.elements['communication'].value = log.communication;
-            form.elements['origin'].value = log.origin;
-            form.elements['visibility'].value = log.visibility;
+            if(log.intensity) form.elements['intensity'].value = log.intensity;
+            if(log.regulation) form.elements['regulation'].value = log.regulation;
+            if(log.communication) form.elements['communication'].value = log.communication;
+            if(log.origin) form.elements['origin'].value = log.origin;
+            if(log.visibility) form.elements['visibility'].value = log.visibility;
         };
 
         window.deleteCurrentLog = async () => {
